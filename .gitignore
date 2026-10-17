@@ -1,0 +1,13 @@
+# Nested separate repositories
+4ShanbeJalase/
+karagah-fatemiye/
+
+# IDE and AI Tooling
+.claude/
+.vscode/
+.idea/
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
