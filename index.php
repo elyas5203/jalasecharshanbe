@@ -14,6 +14,8 @@ $__csrf = csrfToken();
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>مدیریت هوشمند کلاس</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/Vazirmatn-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/Vazirmatn-700.woff2" as="font" type="font/woff2" crossorigin>
   <script>
     window.CHSH = {
       csrf: <?= json_encode($__csrf) ?>,
@@ -21,7 +23,6 @@ $__csrf = csrfToken();
       miEnabled: <?= $__miEnabled ? 'true' : 'false' ?>
     };
   </script>
-
 
 <script>
 <?php include __DIR__ . '/parts/chart.js'; ?>
@@ -85,9 +86,14 @@ $__csrf = csrfToken();
   </div>
 
   <div class="header">
-    <div class="menu-btn" onclick="toggleSidebar()" role="button" tabindex="0" aria-label="باز کردن منو">☰</div>
-    <h1 style="margin:0; font-size:1.2rem;" id="page-title">داشبورد</h1>
-    <div style="font-size:0.9rem; font-weight:bold; opacity:0.9;" id="header-date">...</div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div class="menu-btn" onclick="toggleSidebar()" role="button" tabindex="0" aria-label="باز کردن منو">☰</div>
+      <h1 style="margin:0; font-size:1.15rem;" id="page-title">داشبورد</h1>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div id="header-date">...</div>
+      <button class="menu-btn" style="width:38px; height:38px; font-size:1.05rem; border-radius:50%;" onclick="toggleDark()" title="تغییر تم شب/روز" aria-label="تغییر تم">🌙</button>
+    </div>
   </div>
 
   <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -105,6 +111,7 @@ $__csrf = csrfToken();
     <div class="menu-item" onclick="nav('score')"><i class="fas fa-star-half-alt"></i> امتیازدهی</div>
     <div class="menu-item" onclick="nav('notes')"><i class="fas fa-pen-nib"></i> یادداشت‌ها</div>
     <div class="menu-item" onclick="nav('settings')"><i class="fas fa-user-cog"></i> تنظیمات</div>
+    <div class="menu-item" onclick="toggleDark()"><i class="fas fa-moon"></i> تغییر حالت شب/روز</div>
     <?php if ($__readOnly): ?>
     <a class="menu-item" href="admin.php" style="text-decoration:none; color:inherit; margin-top:auto;"><i class="fas fa-arrow-right"></i> بازگشت به پنل مدیریت</a>
     <?php else: ?>

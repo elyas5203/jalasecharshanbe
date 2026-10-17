@@ -52,7 +52,7 @@ class Chart {
     const horizontal = cfg.options && cfg.options.indexAxis === 'y';
     this.ctx.clearRect(0, 0, w, h);
     this.ctx.direction = 'rtl';
-    this.ctx.font = '12px Tahoma, sans-serif';
+    this.ctx.font = '500 12px Vazirmatn, sans-serif';
     if (!labels.length) { this._empty(w, h); return; }
     if (type === 'bar') horizontal ? this._barHorizontal(labels, data, ds, w, h) : this._barVertical(labels, data, ds, w, h);
     else this._line(labels, data, ds, w, h, cfg);

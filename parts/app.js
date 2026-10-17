@@ -244,8 +244,18 @@
 
   function autoGrow(el) { el.style.height='auto'; el.style.height=(el.scrollHeight)+'px'; }
 
+  function toggleDark(){
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('chsh_dark_theme', isDark ? '1' : '0');
+  }
+  window.toggleDark = toggleDark;
+
   window.addEventListener('load', () => {
     try {
+      if (localStorage.getItem('chsh_dark_theme') === '1') {
+        document.body.classList.add('dark-mode');
+      }
       const t=new Date().toLocaleDateString('fa-IR');
       document.querySelectorAll('.to-persian').forEach(i=>i.value=toPersianNum(t));
       initPersianInputs();
