@@ -1,12 +1,12 @@
 @charset "UTF-8";
 
 /* =============================================================================
-   APPLE iOS 18 LIQUID GLASS DESIGN SYSTEM (Glassmorphism & SF Polish)
-   سامانه هوشمند چهارشنبه جلسه — تم شیشه‌ای مایع فوق‌العاده با الهام از iOS و VisionOS
+   LIQUID GLASS DESIGN SYSTEM (2026) — سامانه هوشمند چهارشنبه جلسه
+   استایل‌شیت یکپارچه، سبک، مدرن، موبایل‌فرست با تم شیشه‌ای مایع و فونت وزیرمتن
    ============================================================================= */
 
 /* -----------------------------------------------------------------------------
-   ۱. فونت محلی وزیرمتن (Offline Local Font)
+   ۱. بارگذاری فونت محلی وزیرمتن (بدون وابستگی به اینترنت)
    ----------------------------------------------------------------------------- */
 @font-face {
   font-family: 'Vazirmatn';
@@ -38,91 +38,116 @@
 }
 
 /* -----------------------------------------------------------------------------
-   ۲. متغیرهای دیزاین توکن Apple Liquid Glass (iOS System Tokens)
+   ۲. متغیرهای طراحی شیشه‌ای مایع اصیل آیفون (iOS Liquid Glass Tokens)
    ----------------------------------------------------------------------------- */
 :root {
-  --font-main: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Tahoma, sans-serif;
+  --font-main: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+  
+  /* پالت رنگی اختصاصی iOS */
+  --ios-blue: #007AFF;
+  --ios-purple: #5856D6;
+  --ios-indigo: #4f46e5;
+  --ios-green: #34C759;
+  --ios-orange: #FF9500;
+  --ios-red: #FF3B30;
+  --ios-cyan: #32ADE6;
 
-  /* رنگ‌های سیستم عامل iOS */
-  --ios-blue: #007aff;
-  --ios-blue-rgb: 0, 122, 255;
-  --ios-indigo: #5856d6;
-  --ios-purple: #af52de;
-  --ios-pink: #ff2d55;
-  --ios-green: #34c759;
-  --ios-green-rgb: 52, 199, 89;
-  --ios-orange: #ff9500;
-  --ios-orange-rgb: 255, 149, 0;
-  --ios-red: #ff3b30;
-  --ios-red-rgb: 255, 59, 48;
-  --ios-teal: #30b0c7;
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --primary-glow: rgba(99, 102, 241, 0.35);
+  --success: #34C759;
+  --success-glow: rgba(52, 199, 89, 0.3);
+  --warning: #FF9500;
+  --warning-glow: rgba(255, 149, 0, 0.3);
+  --danger: #FF3B30;
+  --danger-glow: rgba(255, 59, 48, 0.3);
+  --info: #007AFF;
+  --info-glow: rgba(0, 122, 255, 0.3);
+  --purple: #5856D6;
 
-  --primary: var(--ios-blue);
-  --primary-light: #5ac8fa;
-  --primary-glow: rgba(0, 122, 255, 0.35);
-  --success: var(--ios-green);
-  --warning: var(--ios-orange);
-  --danger: var(--ios-red);
+  /* تم روشن: بوم مایع آئورا آیفون (Apple iOS Light Aurora Canvas) */
+  --bg-body: #ecf1f9;
+  --bg-gradient: 
+    radial-gradient(circle at 12% 15%, rgba(99, 102, 241, 0.30) 0%, transparent 48%),
+    radial-gradient(circle at 88% 12%, rgba(217, 70, 239, 0.28) 0%, transparent 44%),
+    radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.24) 0%, transparent 52%),
+    radial-gradient(circle at 15% 85%, rgba(52, 199, 89, 0.24) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(249, 115, 22, 0.24) 0%, transparent 45%),
+    #ecf1f9;
 
-  /* تم شیشه‌ای روز (iOS Frosted Crystal) */
-  --bg-canvas: #f2f5fa;
-  --bg-gradient: radial-gradient(circle at 10% 15%, rgba(0, 122, 255, 0.22) 0%, transparent 45%),
-                 radial-gradient(circle at 85% 10%, rgba(175, 82, 222, 0.20) 0%, transparent 45%),
-                 radial-gradient(circle at 50% 90%, rgba(52, 199, 89, 0.16) 0%, transparent 45%),
-                 radial-gradient(circle at 90% 85%, rgba(255, 149, 0, 0.18) 0%, transparent 45%),
-                 #f2f5fa;
-
+  /* متریال شیشه مایع لایه‌ای (iOS Glass Layer) */
   --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-bg-hover: rgba(255, 255, 255, 0.80);
+  --glass-bg-hover: rgba(255, 255, 255, 0.78);
   --glass-bg-subtle: rgba(255, 255, 255, 0.42);
-  --glass-border: rgba(255, 255, 255, 0.65);
-  --glass-border-subtle: rgba(255, 255, 255, 0.45);
-  --glass-shadow: 0 12px 34px -6px rgba(15, 23, 42, 0.08), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03);
-  --glass-shadow-lg: 0 24px 60px -10px rgba(15, 23, 42, 0.15), inset 0 1px 2px 0 rgba(255, 255, 255, 0.98), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.04);
-  --glass-blur: blur(35px) saturate(220%) brightness(1.04);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-border-subtle: rgba(255, 255, 255, 0.40);
 
-  --text-main: #1c1c1e;
-  --text-muted: #636366;
-  --text-subtle: #8e8e93;
+  /* بازتاب لبه‌های سه‌بعدی آیفون (Apple Specular Highlight Rim) */
+  --glass-shadow: 
+    0 14px 35px -6px rgba(30, 41, 59, 0.09),
+    0 4px 12px -2px rgba(30, 41, 59, 0.04),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03);
+
+  --glass-shadow-lg: 
+    0 25px 55px -10px rgba(15, 23, 42, 0.15),
+    0 8px 22px -4px rgba(15, 23, 42, 0.07),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1.5px 0 rgba(0, 0, 0, 0.04);
+
+  --glass-blur: blur(30px) saturate(215%) brightness(1.03);
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
   --card-bg: var(--glass-bg);
   --border: var(--glass-border-subtle);
-
-  /* انحناهای نرم اسکویرکل اپل (Apple Squircle Radii) */
-  --radius-xs: 8px;
   --radius-sm: 14px;
-  --radius-md: 20px;
-  --radius-lg: 26px;
-  --radius-xl: 34px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
   --radius-pill: 9999px;
 }
 
 body.dark-mode {
-  /* تم شیشه‌ای شب (iOS Space Black Titanium Aurora) */
-  --bg-canvas: #090a12;
-  --bg-gradient: radial-gradient(circle at 10% 15%, rgba(0, 122, 255, 0.32) 0%, transparent 45%),
-                 radial-gradient(circle at 85% 10%, rgba(175, 82, 222, 0.28) 0%, transparent 45%),
-                 radial-gradient(circle at 50% 90%, rgba(52, 199, 89, 0.24) 0%, transparent 45%),
-                 radial-gradient(circle at 90% 85%, rgba(255, 149, 0, 0.22) 0%, transparent 45%),
-                 #090a12;
+  /* تم تاریک: ابسیدین مایع فضایی (Apple Cosmic Obsidian Canvas) */
+  --bg-body: #070913;
+  --bg-gradient: 
+    radial-gradient(circle at 12% 15%, rgba(99, 102, 241, 0.40) 0%, transparent 48%),
+    radial-gradient(circle at 88% 12%, rgba(168, 85, 247, 0.35) 0%, transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.30) 0%, transparent 52%),
+    radial-gradient(circle at 15% 85%, rgba(16, 185, 129, 0.26) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.30) 0%, transparent 45%),
+    #070913;
 
-  --glass-bg: rgba(28, 30, 42, 0.65);
-  --glass-bg-hover: rgba(38, 42, 58, 0.78);
-  --glass-bg-subtle: rgba(22, 24, 34, 0.48);
-  --glass-border: rgba(255, 255, 255, 0.16);
-  --glass-border-subtle: rgba(255, 255, 255, 0.10);
-  --glass-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.55), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
-  --glass-shadow-lg: 0 28px 70px -12px rgba(0, 0, 0, 0.72), inset 0 1px 2px 0 rgba(255, 255, 255, 0.30), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4);
-  --glass-blur: blur(35px) saturate(220%) brightness(1.08);
+  --glass-bg: rgba(22, 27, 46, 0.65);
+  --glass-bg-hover: rgba(30, 38, 64, 0.78);
+  --glass-bg-subtle: rgba(18, 23, 38, 0.50);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-border-subtle: rgba(255, 255, 255, 0.09);
 
-  --text-main: #ffffff;
-  --text-muted: #a1a1aa;
-  --text-subtle: #71717a;
+  --glass-shadow: 
+    0 14px 38px -4px rgba(0, 0, 0, 0.55),
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.45);
+
+  --glass-shadow-lg: 
+    0 28px 65px -8px rgba(0, 0, 0, 0.70),
+    0 10px 26px rgba(0, 0, 0, 0.45),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 1.5px 0 rgba(0, 0, 0, 0.55);
+
+  --glass-blur: blur(34px) saturate(225%) brightness(1.05);
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
   --card-bg: var(--glass-bg);
   --border: var(--glass-border);
 }
 
 /* -----------------------------------------------------------------------------
-   ۳. بازنشانی عمومی، ایمنی تصاویر و تایپوگرافی فارسی
+   ۳. بازنشانی عمومی، ایمنی تصویر و تایپوگرافی فارسی
    ----------------------------------------------------------------------------- */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -142,7 +167,7 @@ html, body {
 
 body {
   background: var(--bg-gradient);
-  background-color: var(--bg-canvas);
+  background-color: var(--bg-body);
   background-attachment: fixed;
   color: var(--text-main);
   padding-bottom: 110px;
@@ -152,246 +177,336 @@ body {
   min-height: 100vh;
 }
 
-/* ایمنی صددرصدی تصاویر (جلوگیری قطعی از کشیده شدن عکس‌ها) */
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* تمام آواتارهای متربیان در کل سیستم */
-.avatar-sm,
-.attendance-detail-row img,
-.dash-item img,
-.profile-list-item img,
-.student-select-card img,
-.att-row img,
-.att-row-head img {
-  width: 44px !important;
-  height: 44px !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
-  max-width: 44px !important;
-  max-height: 44px !important;
-  border-radius: 50% !important;
-  object-fit: cover !important;
-  display: block;
-  flex-shrink: 0;
-  border: 2px solid rgba(255, 255, 255, 0.8) !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12) !important;
-}
-
-.avatar-md {
-  width: 60px !important;
-  height: 60px !important;
-  border-radius: 50% !important;
-  object-fit: cover !important;
-  border: 2.5px solid rgba(255, 255, 255, 0.9) !important;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15) !important;
-}
-
-.profile-avatar {
-  width: 90px !important;
-  height: 90px !important;
-  border-radius: 50% !important;
-  object-fit: cover !important;
-  display: block;
-  margin: 0 auto 12px;
-  border: 3.5px solid rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18) !important;
-}
-
-/* -----------------------------------------------------------------------------
-   ۴. انیمیشن امبینت شفق قطبی آی‌او‌اس (iOS Aurora Ambient Mesh)
-   ----------------------------------------------------------------------------- */
-.ios-ambient-mesh {
+/* گوی‌های نور ارگانیک شناور پس‌زمینه (Ambient Floating Aurora Orbs) */
+body::before, body::after {
+  content: '';
   position: fixed;
-  inset: 0;
-  overflow: hidden;
+  border-radius: 50%;
   pointer-events: none;
   z-index: 0;
-}
-.ios-blob {
-  position: absolute;
-  border-radius: 50%;
   filter: blur(85px);
-  opacity: 0.8;
-  will-change: transform;
-  animation: floatOrb 18s ease-in-out infinite alternate;
+  opacity: 0.70;
 }
-.blob-1 {
-  top: -10%;
-  right: -5%;
-  width: 460px;
-  height: 460px;
-  background: radial-gradient(circle, rgba(0, 122, 255, 0.35) 0%, rgba(0, 122, 255, 0) 70%);
+body::before {
+  top: -8vw;
+  right: -8vw;
+  width: 52vw;
+  height: 52vw;
+  min-width: 320px;
+  min-height: 320px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.48), rgba(217, 70, 239, 0.28), transparent 70%);
+  animation: floatOrb 20s ease-in-out infinite alternate;
 }
-.blob-2 {
-  top: 30%;
-  left: -8%;
-  width: 440px;
-  height: 440px;
-  background: radial-gradient(circle, rgba(175, 82, 222, 0.30) 0%, rgba(175, 82, 222, 0) 70%);
-  animation-duration: 22s;
-}
-.blob-3 {
-  bottom: 12%;
-  right: 12%;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(52, 199, 89, 0.28) 0%, rgba(52, 199, 89, 0) 70%);
-  animation-duration: 24s;
-}
-.blob-4 {
-  bottom: -15%;
-  left: 20%;
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(255, 149, 0, 0.25) 0%, rgba(255, 149, 0, 0) 70%);
-  animation-duration: 20s;
+body::after {
+  bottom: -8vw;
+  left: -8vw;
+  width: 56vw;
+  height: 56vw;
+  min-width: 340px;
+  min-height: 340px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.42), rgba(52, 199, 89, 0.26), transparent 70%);
+  animation: floatOrb 24s ease-in-out infinite alternate-reverse;
 }
 @keyframes floatOrb {
   0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(35px, 45px) scale(1.08); }
-  100% { transform: translate(-25px, -35px) scale(0.94); }
+  50% { transform: translate(-35px, 25px) scale(1.06); }
+  100% { transform: translate(25px, -18px) scale(0.96); }
 }
 
+/* خط‌قرمز ایمنی تصاویر (Image Safety Invariants) */
+img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+h1, h2, h3, h4, h5, h6, b, strong {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+/* آیکن‌های فونت‌اوسام آفلاین بومی */
+.fas, .fa {
+  font-style: normal;
+  line-height: 1;
+  display: inline-block;
+  min-width: 1em;
+  text-align: center;
+}
+.fa-chart-line::before { content: "📈"; }
+.fa-toolbox::before { content: "🧰"; }
+.fa-user-graduate::before { content: "👤"; }
+.fa-book-reader::before { content: "📚"; }
+.fa-history::before { content: "🕘"; }
+.fa-check-double::before { content: "✅"; }
+.fa-star-half-alt::before { content: "⭐"; }
+.fa-pen-nib::before { content: "✍"; }
+.fa-user-cog::before, .fa-cog::before { content: "⚙"; }
+.fa-moon::before { content: "🌙"; }
+.fa-stopwatch::before { content: "⏱"; }
+.fa-users-cog::before { content: "👥"; }
+.fa-pen-fancy::before { content: "📝"; }
+.fa-trash::before { content: "🗑"; }
+.fa-edit::before { content: "✏"; }
+.fa-check-circle::before, .fa-check::before { content: "✓"; }
+.fa-times::before { content: "×"; }
+.fa-chevron-down::before { content: "⌄"; }
+.fa-info-circle::before { content: "ℹ"; }
+.fa-exclamation-circle::before, .fa-exclamation-triangle::before { content: "⚠"; }
+.fa-question-circle::before { content: "❓"; }
+.fa-search::before { content: "🔎"; }
+.fa-arrow-right::before { content: "➔"; }
+
 /* -----------------------------------------------------------------------------
-   ۵. لایه والد و کانتینر مرکزی هوشمند (Responsive Container)
+   ۴. کانتینر اصلی و کارت‌های شیشه‌ای مایع (Liquid Glass Cards)
    ----------------------------------------------------------------------------- */
 .container {
-  width: 100%;
-  max-width: 860px;
+  padding: 16px;
+  max-width: 840px;
   margin: 0 auto;
-  padding: 16px 18px 24px;
   box-sizing: border-box;
   position: relative;
   z-index: 1;
 }
-
-/* -----------------------------------------------------------------------------
-   ۶. هدر شیشه‌ای معلق شناور (iOS Floating Header)
-   ----------------------------------------------------------------------------- */
-.header {
-  position: sticky;
-  top: 12px;
-  z-index: 400;
-  max-width: 860px;
-  margin: 12px auto 14px;
-  padding: 12px 18px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+@media (min-width: 768px) {
+  .container {
+    padding: 24px;
+  }
 }
 
-.menu-btn {
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-  color: var(--text-main);
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.15rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.menu-btn:hover {
-  background: var(--glass-bg-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-.menu-btn:active {
-  transform: scale(0.92);
-}
-
-#header-date {
-  background: rgba(118, 118, 128, 0.12);
-  border: 1px solid var(--glass-border-subtle);
-  padding: 7px 16px;
-  border-radius: var(--radius-pill);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-/* -----------------------------------------------------------------------------
-   ۷. کارت‌های شیشه‌ای مایع (Apple Liquid Glass Cards)
-   ----------------------------------------------------------------------------- */
 .card {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow);
-  padding: 22px;
+  padding: 20px;
   margin-bottom: 18px;
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.card:hover {
-  border-color: rgba(255, 255, 255, 0.75);
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  pointer-events: none;
 }
 
 .section-title {
-  margin: 0 0 16px;
-  font-size: 1.18rem;
-  font-weight: 800;
-  color: var(--text-main);
+  margin: 0 0 16px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
 }
 
-/* کارت ویژه هیرو (Hero Card) */
+/* -----------------------------------------------------------------------------
+   ۵. هدر شیشه‌ای معلق و نوار کناری (Header & Sidebar)
+   ----------------------------------------------------------------------------- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 800;
+  height: 64px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.2s ease;
+}
+.menu-btn:active {
+  transform: scale(0.92);
+}
+
+#page-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  background: linear-gradient(135deg, var(--text-main) 30%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#header-date {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* نوار کناری */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 295px;
+  height: 100%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border-left: 1px solid var(--glass-border);
+  z-index: 2500;
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.15);
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2400;
+  display: none;
+  animation: fadeIn 0.25s ease;
+}
+.sidebar-overlay.open {
+  display: block;
+}
+
+.menu-item {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+.menu-item:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border);
+  transform: translateX(-4px);
+}
+.menu-item.active {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(99, 102, 241, 0.2));
+  color: var(--primary);
+  border-color: rgba(99, 102, 241, 0.3);
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* -----------------------------------------------------------------------------
+   ۶. ویجت‌های داشبورد، هیرو و کارهای سریع (Hero & Quick Actions)
+   ----------------------------------------------------------------------------- */
 .hero-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(240, 245, 255, 0.55) 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(240, 244, 255, 0.7) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 body.dark-mode .hero-card {
-  background: linear-gradient(135deg, rgba(32, 35, 52, 0.72) 0%, rgba(20, 22, 34, 0.60) 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.20);
+  background: linear-gradient(135deg, rgba(30, 41, 65, 0.85) 0%, rgba(20, 28, 48, 0.75) 100%);
 }
 
 .hero-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 20px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
-@media (max-width: 680px) {
-  .hero-grid { grid-template-columns: 1fr; gap: 16px; }
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.action-tile {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 14px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-main);
+  font-size: 0.86rem;
+  font-weight: 700;
+  box-shadow: var(--glass-shadow);
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.action-tile span {
+  font-size: 1.6rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+.action-tile:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-light);
+  box-shadow: 0 12px 24px -6px var(--primary-glow);
+}
+.action-tile:hover span {
+  transform: scale(1.15);
+}
+.action-tile:active {
+  transform: scale(0.95);
 }
 
 .hero-stat {
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.12));
+  border: 1px solid rgba(99, 102, 241, 0.25);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 12px;
 }
 .hero-stat small {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-weight: 600;
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 0.88rem;
 }
 .hero-stat b {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--ios-blue);
-  display: block;
-  margin-top: 4px;
+  color: var(--text-main);
+  font-size: 1.15rem;
 }
 
 .metric-strip {
@@ -399,122 +514,153 @@ body.dark-mode .hero-card {
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
+
 .metric-pill {
   background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 10px;
-  text-align: center;
-}
-.metric-pill small {
-  display: block;
-  font-size: 0.76rem;
-  color: var(--text-muted);
-}
-.metric-pill b {
-  display: block;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-top: 2px;
-}
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 14px;
-}
-.action-tile {
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  padding: 14px 8px;
+  padding: 10px 8px;
+  text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  font-size: 0.84rem;
-  font-weight: 700;
-  color: var(--text-main);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 4px;
 }
-.action-tile:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border);
-  transform: translateY(-2px);
-  box-shadow: var(--glass-shadow);
+.metric-pill small {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
 }
-.action-tile:active {
-  transform: scale(0.94);
-}
-.action-tile span {
-  font-size: 1.45rem;
+.metric-pill b {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
 }
 
-/* -----------------------------------------------------------------------------
-   ۸. فهرست متربیان و آیتم‌های داشبورد (iOS List Items)
-   ----------------------------------------------------------------------------- */
-.dash-item,
-.profile-list-item {
+/* هشدارهای مدیریتی */
+.alert-card {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #b91c1c;
 }
-.dash-item:hover,
-.profile-list-item:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border);
-  transform: translateY(-1px);
-}
-.dash-item:active,
-.profile-list-item:active {
-  transform: scale(0.98);
-}
-
-.dash-item b {
-  font-size: 0.98rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.score-badge {
-  background: rgba(0, 122, 255, 0.14);
-  color: var(--ios-blue);
-  font-weight: 800;
-  font-size: 0.88rem;
-  padding: 5px 14px;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(0, 122, 255, 0.25);
+body.dark-mode .alert-card {
+  color: #fca5a5;
 }
 
 /* -----------------------------------------------------------------------------
-   ۹. سیستم حضور و غیاب سه‌حالته و سوابق (iOS Attendance Component)
+   ۷. دکمه‌ها و فرم‌ها (Buttons & Inputs with Liquid Glass Finish)
    ----------------------------------------------------------------------------- */
-#att-list {
-  display: grid;
-  gap: 12px;
+.btn {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 18px -2px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-blue {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  box-shadow: 0 8px 20px -4px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn-green {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  box-shadow: 0 8px 20px -4px var(--success-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn-red {
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+  box-shadow: 0 8px 20px -4px var(--danger-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn-purple {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  box-shadow: 0 8px 20px -4px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn-outline {
+  background: var(--glass-bg-subtle);
+  backdrop-filter: var(--glass-blur);
+  border: 1.5px solid var(--primary-light);
+  color: var(--primary);
+  box-shadow: var(--glass-shadow);
+}
+.btn-outline:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.96rem;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.22s ease;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 4px var(--primary-glow);
+}
+body.dark-mode input:focus, body.dark-mode select:focus, body.dark-mode textarea:focus {
+  background: rgba(30, 41, 65, 0.95);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 70px;
+  line-height: 1.6;
+}
+
+/* -----------------------------------------------------------------------------
+   ۸. حضور و غیاب شیشه‌ای و سوئیچ‌های رنگی لمسی (Attendance Segmented Controls)
+   ----------------------------------------------------------------------------- */
+.compact-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .att-row {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px 18px;
-  border-radius: var(--radius-md);
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   transition: all 0.2s ease;
 }
@@ -523,259 +669,444 @@ body.dark-mode .hero-card {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 12px;
 }
 .att-row-head b {
   font-size: 1.05rem;
   font-weight: 800;
   color: var(--text-main);
+  flex: 1;
 }
 
 .att-late-badge {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--ios-orange);
-  background: rgba(255, 149, 0, 0.16);
-  border: 1px solid rgba(255, 149, 0, 0.35);
-  padding: 4px 12px;
+  padding: 4px 10px;
   border-radius: var(--radius-pill);
-  margin-right: auto;
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
-/* کنترل سگمنتد اپل (Apple Segmented Control) */
 .att-seg {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
-  background: rgba(118, 118, 128, 0.14);
-  padding: 4px;
+  background: rgba(120, 120, 128, 0.14);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px;
+  gap: 4px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
+
 .att-seg-btn {
+  min-height: 44px;
   border: none;
+  border-radius: 10px;
   background: transparent;
   color: var(--text-muted);
+  font-family: inherit;
+  font-weight: 600;
   font-size: 0.88rem;
-  font-weight: 700;
-  padding: 10px 4px;
-  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 44px;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  padding: 8px 4px;
 }
 .att-seg-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
+}
+
+/* حالت فعال: کپسول برجسته شیشه‌ای اپل */
+.att-seg-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 800;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04);
+}
+body.dark-mode .att-seg-btn.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .att-seg-btn.present.active {
-  background: linear-gradient(135deg, #34c759, #28cd41);
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(52, 199, 89, 0.45);
+  color: #059669;
 }
+.att-seg-btn.present.active::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
 .att-seg-btn.late.active {
-  background: linear-gradient(135deg, #ff9500, #ff9f0a);
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(255, 149, 0, 0.45);
+  color: #d97706;
 }
+.att-seg-btn.late.active::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
 .att-seg-btn.excused.active {
-  background: linear-gradient(135deg, #007aff, #0a84ff);
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(0, 122, 255, 0.45);
+  color: #0284c7;
 }
+.att-seg-btn.excused.active::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  box-shadow: 0 0 8px #0ea5e9;
+}
+
 .att-seg-btn.absent.active {
-  background: linear-gradient(135deg, #ff3b30, #ff453a);
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(255, 59, 48, 0.45);
+  color: #dc2626;
+}
+.att-seg-btn.absent.active::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
 }
 
-/* -----------------------------------------------------------------------------
-   ۱۰. سوابق جلسات و ریزحضورها (Attendance History Cards & Details)
-   ----------------------------------------------------------------------------- */
-.attendance-history-card .section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-#attendance-history-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 14px;
-}
-
+/* سوابق جلسات حضور و غیاب */
 .attendance-session-card {
-  border-radius: var(--radius-md);
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
+  background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
   overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.2s ease;
 }
-.attendance-session-card:hover {
-  background: var(--glass-bg);
-  border-color: var(--glass-border);
-}
-
 .attendance-session-head {
+  padding: 14px 18px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 16px 18px;
+  align-items: center;
   cursor: pointer;
-  user-select: none;
+  background: var(--glass-bg-subtle);
 }
 .attendance-session-head b {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 800;
+  font-size: 1rem;
   color: var(--text-main);
+  display: block;
 }
 .attendance-session-head small {
-  display: block;
-  font-size: 0.82rem;
   color: var(--text-muted);
-  margin-top: 4px;
+  font-size: 0.8rem;
 }
-
 .attendance-mini-stats {
   display: flex;
   gap: 6px;
-  align-items: center;
 }
 .attendance-mini-stats span {
-  min-width: 32px;
-  height: 32px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 10px;
-  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
   font-weight: 800;
-  font-size: 0.82rem;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
-.attendance-mini-stats .ok { background: linear-gradient(135deg, #34c759, #28cd41); }
-.attendance-mini-stats .warn { background: linear-gradient(135deg, #ff9500, #ff9f0a); }
-.attendance-mini-stats .danger { background: linear-gradient(135deg, #ff3b30, #ff453a); }
-.attendance-mini-stats .info { background: linear-gradient(135deg, #007aff, #0a84ff); }
+.attendance-mini-stats .ok { background: rgba(16, 185, 129, 0.15); color: #059669; }
+.attendance-mini-stats .warn { background: rgba(245, 158, 11, 0.15); color: #d97706; }
+.attendance-mini-stats .danger { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+.attendance-mini-stats .info { background: rgba(2, 132, 199, 0.15); color: #0284c7; }
 
+/* بخش جزئیات جلسه و مهار قطعی عکس‌ها */
 .attendance-session-body {
   display: none;
-  padding: 8px 16px 16px;
-  border-top: 1px solid var(--glass-border-subtle);
-  animation: fadeIn 0.2s ease;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.25);
+}
+body.dark-mode .attendance-session-body {
+  background: rgba(0, 0, 0, 0.2);
 }
 .attendance-session-card.open .attendance-session-body {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .attendance-detail-actions {
   display: flex;
   justify-content: flex-end;
-  padding: 6px 0 10px;
+  margin-bottom: 6px;
 }
-
-/* ردیف تفصیلی حضور هر متربی در تاریخچه (رفع قطعی باگ عکس بزرگ) */
 .attendance-detail-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 10px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--glass-bg);
-  border: 1px solid var(--glass-border-subtle);
-  transition: transform 0.15s ease;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-right: 4px solid var(--success);
+  transition: all 0.2s ease;
 }
-.attendance-detail-row:hover {
-  transform: translateX(-2px);
-}
+.attendance-detail-row.warn { border-right-color: var(--warning); }
+.attendance-detail-row.danger { border-right-color: var(--danger); }
+.attendance-detail-row.info { border-right-color: var(--info); }
 .attendance-detail-row > div {
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
 }
+.attendance-detail-row img,
+.attendance-detail-row .avatar-sm {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  max-height: 38px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 1.5px solid var(--glass-border) !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+}
 .attendance-detail-row b {
   font-size: 0.95rem;
-  font-weight: 700;
   color: var(--text-main);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
-
-/* بج کپسولی وضعیت حضور در سوابق */
-.attendance-detail-row .status-pill,
-.attendance-detail-row > span {
-  font-size: 0.82rem;
+.attendance-detail-row span {
+  flex: 0 0 auto;
   font-weight: 800;
-  padding: 5px 14px;
-  border-radius: var(--radius-pill);
-  flex-shrink: 0;
-}
-.attendance-detail-row.present .status-pill,
-.attendance-detail-row.present > span,
-.attendance-detail-row.ok .status-pill,
-.attendance-detail-row.ok > span {
-  background: rgba(52, 199, 89, 0.16);
-  color: #34c759;
-  border: 1px solid rgba(52, 199, 89, 0.35);
-}
-.attendance-detail-row.late .status-pill,
-.attendance-detail-row.late > span,
-.attendance-detail-row.warn .status-pill,
-.attendance-detail-row.warn > span {
-  background: rgba(255, 149, 0, 0.16);
-  color: #ff9500;
-  border: 1px solid rgba(255, 149, 0, 0.35);
-}
-.attendance-detail-row.absent .status-pill,
-.attendance-detail-row.absent > span,
-.attendance-detail-row.danger .status-pill,
-.attendance-detail-row.danger > span {
-  background: rgba(255, 59, 48, 0.16);
-  color: #ff3b30;
-  border: 1px solid rgba(255, 59, 48, 0.35);
-}
-.attendance-detail-row.excused .status-pill,
-.attendance-detail-row.excused > span,
-.attendance-detail-row.info .status-pill,
-.attendance-detail-row.info > span {
-  background: rgba(0, 122, 255, 0.16);
-  color: #007aff;
-  border: 1px solid rgba(0, 122, 255, 0.35);
+  font-size: 0.86rem;
 }
 
 /* -----------------------------------------------------------------------------
-   ۱۱. داک ناوبری معلق شناور (Apple iOS Floating Dock Bar)
+   ۹. کارت‌های طرح درس، ماژول‌ها و سین برنامه (Lesson Plans & Modules)
+   ----------------------------------------------------------------------------- */
+.plan-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
+  border-right: 5px solid var(--primary);
+  transition: all 0.25s ease;
+}
+.plan-card.game { border-right-color: var(--success); }
+.plan-card.story { border-right-color: var(--warning); }
+.plan-card.hazrat { border-right-color: var(--info); }
+.plan-card.trip { border-right-color: var(--purple); }
+
+.plan-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: var(--glass-bg-subtle);
+}
+.plan-body {
+  display: none;
+  padding: 20px;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.35);
+}
+.plan-card.open .plan-body {
+  display: block;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  margin: 4px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+.mat-chip.have {
+  background: rgba(16, 185, 129, 0.15);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+.mat-chip.buy {
+  background: rgba(239, 68, 68, 0.15);
+  color: #991b1b;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.chip-ui {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 0.88rem;
+  cursor: pointer;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  color: var(--text-main);
+  display: inline-block;
+  margin: 4px;
+  transition: all 0.2s ease;
+}
+.chip-ui:hover {
+  background: var(--primary);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* -----------------------------------------------------------------------------
+   ۱۰. پروفایل متربی و شماره‌های داینامیک (Student Profile & Dynamic Phones)
+   ----------------------------------------------------------------------------- */
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--glass-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 4px var(--primary-glow);
+  margin: 0 auto 16px;
+  display: block;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.profile-avatar:hover {
+  transform: scale(1.06);
+}
+
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(99, 102, 241, 0.25));
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 0.95rem;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.tabs {
+  display: flex;
+  background: var(--glass-bg-subtle);
+  backdrop-filter: var(--glass-blur);
+  padding: 6px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 20px;
+  border: 1px solid var(--glass-border);
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.tab.active {
+  background: var(--glass-bg-hover);
+  color: var(--primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.35s ease; }
+
+.dash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.dash-item:hover {
+  background: var(--glass-bg-hover);
+  transform: translateX(-4px);
+  border-color: var(--primary-light);
+}
+.avatar-sm {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--glass-border);
+}
+
+/* فیلدهای شماره تماس داینامیک */
+.phones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.phone-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 44px;
+  gap: 8px;
+  align-items: center;
+}
+.phone-del-btn {
+  height: 46px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* -----------------------------------------------------------------------------
+   ۱۱. نوار ناوبری معلق شناور پایین صفحه (Apple iOS Floating Glass Dock)
    ----------------------------------------------------------------------------- */
 .bottom-nav {
   position: fixed;
-  bottom: 18px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 520px;
+  width: calc(100% - 24px);
+  max-width: 480px;
+  height: 66px;
   background: var(--glass-bg);
-  backdrop-filter: blur(40px) saturate(220%);
-  -webkit-backdrop-filter: blur(40px) saturate(220%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--glass-shadow-lg);
+  border-radius: 36px;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 8px 12px;
-  z-index: 500;
+  z-index: 1000;
+  box-shadow: var(--glass-shadow-lg);
+  padding: 0 6px;
 }
 
 .nav-item {
@@ -783,320 +1114,149 @@ body.dark-mode .hero-card {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
   color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
   cursor: pointer;
-  padding: 7px 12px;
-  border-radius: var(--radius-md);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 48px;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 24px;
+  padding: 5px 8px;
+  height: 52px;
   flex: 1;
+  margin: 0 2px;
+  user-select: none;
 }
 .nav-item i {
-  font-size: 1.18rem;
+  font-size: 1.25rem;
+  margin-bottom: 2px;
   transition: transform 0.2s ease;
 }
-.nav-item span {
-  font-size: 0.74rem;
-  font-weight: 700;
+.nav-item:active {
+  transform: scale(0.92);
+}
+.nav-item:hover {
+  color: var(--primary);
 }
 .nav-item.active {
   color: var(--ios-blue);
   background: rgba(0, 122, 255, 0.12);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+body.dark-mode .nav-item.active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.16);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 .nav-item.active i {
-  transform: translateY(-2px);
-}
-.nav-item:active {
-  transform: scale(0.93);
+  transform: translateY(-1px) scale(1.12);
 }
 
 /* -----------------------------------------------------------------------------
-   ۱۲. دکمه‌ها و فرم‌ها (iOS Tactile Buttons & Inputs)
-   ----------------------------------------------------------------------------- */
-.btn {
-  font-weight: 700;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-  font-family: inherit;
-  padding: 12px 18px;
-  font-size: 0.95rem;
-}
-.btn:active {
-  transform: scale(0.97);
-}
-
-.btn-primary, .btn-blue {
-  background: linear-gradient(135deg, var(--ios-blue), #0062d2);
-  color: #ffffff;
-  box-shadow: 0 6px 18px rgba(0, 122, 255, 0.35);
-}
-.btn-green {
-  background: linear-gradient(135deg, var(--ios-green), #28cd41);
-  color: #ffffff;
-  box-shadow: 0 6px 18px rgba(52, 199, 89, 0.35);
-}
-.btn-red {
-  background: linear-gradient(135deg, var(--ios-red), #ff453a);
-  color: #ffffff;
-  box-shadow: 0 6px 18px rgba(255, 59, 48, 0.35);
-}
-.btn-outline {
-  background: rgba(120, 120, 128, 0.12);
-  color: var(--text-main);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(14px);
-}
-.btn-outline:hover {
-  background: var(--glass-bg-hover);
-}
-
-input[type="text"], input[type="password"], input[type="number"], select, textarea {
-  width: 100%;
-  padding: 13px 16px;
-  border: 1.5px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  font-size: 0.98rem;
-  background: var(--glass-bg-subtle);
-  color: var(--text-main);
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--ios-blue);
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.18);
-  background: var(--glass-bg);
-}
-
-.compact-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-top: 12px;
-}
-
-/* -----------------------------------------------------------------------------
-   ۱۳. مدال‌ها و کارت‌های تاییدیه (iOS Sheet Modals)
+   ۱۲. پنجره‌های مودال و دیالوگ‌ها (Frosted Glass Modals)
    ----------------------------------------------------------------------------- */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 3000;
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 6000;
-  padding: 20px;
-  animation: fadeIn 0.2s ease;
-}
-.modal.show,
-.modal[style*="display: flex"],
-.modal[style*="display:flex"] {
-  display: flex !important;
+  padding: 16px;
+  animation: fadeIn 0.25s ease;
 }
 
-.modal-box,
+.modal-box {
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  border-radius: 32px;
+  overflow-y: auto !important;
+  padding: 26px;
+  box-shadow: var(--glass-shadow-lg);
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .confirm-box {
   background: var(--glass-bg);
-  backdrop-filter: blur(45px) saturate(220%);
-  -webkit-backdrop-filter: blur(45px) saturate(220%);
+  backdrop-filter: blur(30px) saturate(200%);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 380px;
   padding: 28px 24px;
-  width: 100%;
-  max-width: 460px;
+  border-radius: 30px;
+  text-align: center;
   box-shadow: var(--glass-shadow-lg);
   position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .confirm-close {
   position: absolute;
-  top: 18px;
-  left: 18px;
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
+  top: 14px;
+  left: 14px;
+  width: 36px;
+  height: 36px;
+  border: 0;
   border-radius: 50%;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
+  background: var(--glass-bg-subtle);
   color: var(--text-muted);
-}
-
-/* -----------------------------------------------------------------------------
-   ۱۴. سایدبار ناوبری (iOS Sidebar Panel)
-   ----------------------------------------------------------------------------- */
-.sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 900;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-.sidebar-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.sidebar {
-  position: fixed;
-  top: 0;
-  right: -320px;
-  width: 290px;
-  height: 100%;
-  background: var(--glass-bg);
-  backdrop-filter: blur(45px) saturate(220%);
-  -webkit-backdrop-filter: blur(45px) saturate(220%);
-  border-left: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow-lg);
-  z-index: 1000;
-  padding: 24px 18px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: right 0.32s cubic-bezier(0.34, 1.2, 0.64, 1);
-}
-.sidebar.active {
-  right: 0;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  color: var(--text-main);
-  font-weight: 700;
-  font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-.menu-item:hover,
-.menu-item.active {
-  background: rgba(0, 122, 255, 0.12);
-  color: var(--ios-blue);
+  font-size: 1.3rem;
+  line-height: 1;
 }
 
-/* -----------------------------------------------------------------------------
-   ۱۵. ابزارها و کارت‌های طرح درس و آرشیو
-   ----------------------------------------------------------------------------- */
-.tool-btn {
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-  border-radius: var(--radius-md);
-  padding: 20px 16px;
+/* تایمر کلاسی */
+.modern-timer {
+  font-size: 4.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-shadow: 0 4px 20px var(--primary-glow);
+  margin: 15px 0;
+  font-family: 'Courier New', Courier, monospace !important;
+  direction: ltr;
+}
+.timer-input-group {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.timer-input-group input {
+  width: 80px;
   text-align: center;
-  font-weight: 700;
-  color: var(--text-main);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.tool-btn:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border);
-  transform: translateY(-2px);
-  box-shadow: var(--glass-shadow);
-}
-.tool-btn i {
-  font-size: 2rem;
-  color: var(--ios-blue);
-}
-
-.plan-card {
-  border-radius: var(--radius-md);
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-  margin-bottom: 12px;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-.plan-header {
-  padding: 16px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-}
-.plan-header b {
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   font-weight: 800;
 }
-.plan-body {
+
+/* پاپ‌آپ راهنمای نمودار (Chart Tooltip) */
+.chart-tip {
+  position: fixed;
+  z-index: 9999;
   display: none;
-  padding: 16px 18px;
-  border-top: 1px solid var(--glass-border-subtle);
-}
-.plan-card.open .plan-body {
-  display: block;
-}
-
-.chip-ui {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--radius-pill);
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin: 4px;
-}
-.chip-ui:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--ios-blue);
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  font-size: 0.88rem;
+  line-height: 1.7;
 }
 
-.mat-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  font-size: 0.82rem;
-  font-weight: 700;
-  margin: 3px;
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-}
-.mat-chip.buy {
-  background: rgba(255, 149, 0, 0.15);
-  color: var(--ios-orange);
-  border-color: rgba(255, 149, 0, 0.35);
-}
-
-/* -----------------------------------------------------------------------------
-   ۱۶. پیام‌های تست و نوتیفیکیشن (iOS Toast)
-   ----------------------------------------------------------------------------- */
+/* اعلان‌های توست (Toast Notifications) */
 .toast-container {
   position: fixed;
-  top: 24px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
@@ -1104,215 +1264,88 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   gap: 10px;
   pointer-events: none;
+  width: 90%;
+  max-width: 400px;
 }
 .toast {
   background: var(--glass-bg);
-  backdrop-filter: blur(35px) saturate(220%);
-  -webkit-backdrop-filter: blur(35px) saturate(220%);
+  backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-pill);
-  padding: 12px 24px;
   color: var(--text-main);
-  font-weight: 700;
-  font-size: 0.95rem;
+  padding: 14px 20px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--glass-shadow-lg);
-  pointer-events: auto;
-  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.toast.success { border-color: rgba(52, 199, 89, 0.5); color: #34c759; }
-.toast.error { border-color: rgba(255, 59, 48, 0.5); color: #ff3b30; }
-
-/* -----------------------------------------------------------------------------
-   ۱۷. تب‌ها و مدیریت نمایش صفحات (View Switcher)
-   ----------------------------------------------------------------------------- */
-.view {
-  display: none;
-}
-.view.active {
-  display: block;
-  animation: fadeIn 0.25s ease;
-}
-
-.tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  background: rgba(118, 118, 128, 0.12);
-  padding: 4px;
-  border-radius: 14px;
-}
-.tab {
-  flex: 1;
-  text-align: center;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
+  align-items: center;
+  gap: 12px;
+  animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), toastOut 0.4s 2.5s forwards;
+  border-right: 5px solid var(--primary);
   font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  transition: all 0.2s ease;
 }
-.tab.active {
-  background: var(--glass-bg);
-  color: var(--text-main);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-}
+.toast.success { border-right-color: var(--success); }
+.toast.error { border-right-color: var(--danger); }
 
-.tab-content {
+/* لایت‌باکس بزرگ‌نمایی عکس */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(16px);
+  z-index: 9990;
   display: none;
+  justify-content: center;
+  align-items: center;
+  cursor: zoom-out;
 }
-.tab-content.active {
-  display: block;
+#lightbox img {
+  max-width: 92%;
+  max-height: 86vh;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
 }
-
-/* حالت خالی (Empty State) */
-.empty-state {
-  text-align: center;
-  padding: 36px 20px;
-  color: var(--text-muted);
-}
-.empty-ico {
-  font-size: 3rem;
-  margin-bottom: 12px;
-}
-.empty-state b {
-  display: block;
-  font-size: 1.1rem;
-  color: var(--text-main);
-}
-.empty-state small {
-  display: block;
-  margin: 6px 0 16px;
-  font-size: 0.88rem;
+.close-lb {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  color: #ffffff;
+  font-size: 2.2rem;
+  cursor: pointer;
 }
 
-/* انیمیشن‌ها */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-/* اسکلت بارگذاری (Skeleton) */
+/* اسکلت بارگذاری */
 #skeleton-screen {
   position: fixed;
   inset: 0;
-  background: var(--bg-canvas);
-  z-index: 8000;
+  background: var(--bg-body);
+  z-index: 9998;
+  padding: 80px 20px 20px;
   display: none;
-  padding: 24px;
-  gap: 16px;
-  flex-direction: column;
 }
 .sk-card {
-  height: 90px;
-  border-radius: var(--radius-md);
-  background: var(--glass-bg-subtle);
-  animation: pulse 1.5s infinite ease-in-out;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.9; }
-}
-
-/* -----------------------------------------------------------------------------
-   ۱۸. استایل‌های تکمیلی صفحات (Calendar, Notes, Search, Archive & Reports)
-   ----------------------------------------------------------------------------- */
-.page-hero-lite {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(240, 245, 255, 0.5) 100%);
+  background: var(--glass-bg);
+  border-radius: var(--radius-lg);
+  height: 120px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--glass-border);
 }
-body.dark-mode .page-hero-lite {
-  background: linear-gradient(135deg, rgba(32, 35, 52, 0.65) 0%, rgba(20, 22, 34, 0.55) 100%);
-}
-.page-hint {
-  font-size: 0.88rem;
-  color: var(--text-muted);
-  margin: -6px 0 16px;
-}
-
-.calendar-item,
-.search-result,
-.archive-item {
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  margin-bottom: 10px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.calendar-item:hover,
-.search-result:hover,
-.archive-item:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border);
-  transform: translateY(-2px);
-  box-shadow: var(--glass-shadow);
-}
-.clickable-calendar-item {
-  cursor: pointer;
+.sk-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg, transparent 0, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  animation: shimmer 1.8s infinite;
 }
 
-.note-item {
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border-subtle);
-  border-radius: var(--radius-sm);
-  margin-bottom: 12px;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-.note-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
-  cursor: pointer;
-  font-weight: 700;
-  color: var(--text-main);
-}
-.note-body {
-  display: none;
-  padding: 14px 16px;
-  border-top: 1px solid var(--glass-border-subtle);
-  font-size: 0.94rem;
-  line-height: 1.7;
-  color: var(--text-main);
-  white-space: pre-wrap;
-}
-.note-item.open .note-body {
-  display: block;
-}
+/* انیمیشن‌ها */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+@keyframes toastIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes toastOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-30px); opacity: 0; } }
 
-/* کارنامه عملکرد */
-.report-card-modal {
-  max-width: 520px;
-}
-.report-header {
-  background: linear-gradient(135deg, var(--ios-blue), var(--ios-indigo));
-  color: #ffffff;
-  padding: 20px;
-  border-radius: var(--radius-md);
-  text-align: center;
-  margin-bottom: 18px;
-  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.35);
-}
-.report-header h2 {
-  color: #ffffff !important;
-  margin: 0;
-}
-.report-body {
-  font-size: 0.92rem;
-  line-height: 1.75;
-}
-.report-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-.report-actions .btn {
-  flex: 1;
-}
-
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.35s ease; }
