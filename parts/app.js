@@ -889,7 +889,7 @@
       if(!r.success) { body.innerHTML = `<p style="opacity:.65;text-align:center;">${r.msg || 'جلسه پیدا نشد'}</p>`; return; }
       body.dataset.loaded = '1';
       let h = `<div class="attendance-detail-actions"><button class="btn btn-red" onclick="askDeleteAttendanceSession(${id}, event)">حذف این تاریخ</button></div>`;
-      h += (r.records || []).map(x=>`<div class="attendance-detail-row ${statusClass(x.status)}"><div><img src="${x.image}" onerror="this.src='assets/default-avatar.svg'"><b>${x.name}</b></div><span>${statusLabel(x.status, x.lateMinutes)}</span></div>`).join('') || '<p style="opacity:.65;text-align:center;">رکوردی برای این جلسه ثبت نشده است.</p>';
+      h += (r.records || []).map(x=>`<div class="attendance-detail-row ${statusClass(x.status)}"><div><img src="${x.image}" class="avatar-sm" onerror="this.src='assets/default-avatar.svg'"><b>${x.name}</b></div><span class="status-pill ${statusClass(x.status)}">${statusLabel(x.status, x.lateMinutes)}</span></div>`).join('') || '<p style="opacity:.65;text-align:center;">رکوردی برای این جلسه ثبت نشده است.</p>';
       body.innerHTML = h;
     }).withFailureHandler(e=>{ body.innerHTML = '<p style="opacity:.65;text-align:center;">خطا در دریافت ریز حضور.</p>'; showAlert(e.message, 'error'); }).getAttendanceSessionDetails(id);
   }

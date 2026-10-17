@@ -50,6 +50,14 @@ $__csrf = csrfToken();
 <script>document.body.classList.add('chsh-readonly');</script>
 <?php endif; ?>
 
+  <!-- iOS Liquid Glass Ambient Aurora Mesh -->
+  <div class="ios-ambient-mesh" aria-hidden="true">
+    <div class="ios-blob blob-1"></div>
+    <div class="ios-blob blob-2"></div>
+    <div class="ios-blob blob-3"></div>
+    <div class="ios-blob blob-4"></div>
+  </div>
+
   <div id="confirm-modal" class="modal" style="z-index: 7000;">
     <div class="confirm-box">
       <button class="confirm-close" onclick="closeConfirm()" aria-label="بستن">×</button>
