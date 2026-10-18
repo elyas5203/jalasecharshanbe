@@ -97,5 +97,34 @@ $initialPage = isset($initialPage) && in_array($initialPage, $allowedPages)
 <?php include __DIR__ . '/parts/spotlight.js'; ?>
 </script>
 
+<script>
+<?php include __DIR__ . '/parts/mi-new.js'; ?>
+</script>
+
+<script src="assets/liquid-glass.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof liquidGlass === 'function') {
+      try {
+        // تنظیمات بازطراحی‌شده فوق‌پیشرفته Liquid Glass (2026 Ultra Liquid Glass)
+        const dock = document.querySelector('.bottom-nav');
+        if (dock) liquidGlass(dock, { scale: -48, chroma: 2.2, blur: 16, saturate: 1.30, border: 0.08 });
+
+        const header = document.querySelector('.header');
+        if (header) liquidGlass(header, { scale: -36, chroma: 1.8, blur: 18, saturate: 1.25, border: 0.06 });
+
+        const hero = document.querySelector('.hero-card');
+        if (hero) liquidGlass(hero, { scale: -42, chroma: 2.0, blur: 16, saturate: 1.28, border: 0.05 });
+
+        document.querySelectorAll('.modal-box').forEach(function(el) {
+          liquidGlass(el, { scale: -45, chroma: 2.0, blur: 20, saturate: 1.30, border: 0.06 });
+        });
+      } catch (err) {
+        console.warn('Liquid Glass optical init fallback:', err);
+      }
+    }
+  });
+</script>
+
 </body>
 </html>

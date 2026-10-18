@@ -19,7 +19,7 @@ function requireCsrfApi(): void {
 }
 
 // عملیات‌هایی که داده را تغییر می‌دهند (برای بلاک در حالت فقط‌خواندنی و بررسی CSRF)
-const CHARSHANBE_WRITE_ACTIONS = ['addStudent','deleteStudent','addManualScore','submitAttendance','deleteAttendanceSession','saveNote','saveSystemSettings','updateStudentProfile','uploadStudentImage','savePlan','deletePlan','submitMILog','submitMIObservation','saveManualLog','testTelegramConnection','setupTelegramWebhook','flushTelegramQueue','uploadPlanFile','deletePlanFile'];
+const CHARSHANBE_WRITE_ACTIONS = ['addStudent','deleteStudent','addManualScore','submitAttendance','deleteAttendanceSession','saveNote','saveSystemSettings','updateStudentProfile','uploadStudentImage','savePlan','deletePlan','submitMILog','submitMIObservation','saveEvaluationPeriod','savePracticalActivity','saveParentInterview','saveParentDomainBatch','saveManualLog','testTelegramConnection','setupTelegramWebhook','flushTelegramQueue','uploadPlanFile','deletePlanFile'];
 
 if (!defined('CHARSHANBE_API_NO_ROUTER')) {
 require_once __DIR__ . '/auth.php';
@@ -87,12 +87,20 @@ try {
         case 'getDashboardAlerts': jsonResponse(getDashboardAlerts($pdo));
         case 'getMonthlyReport': jsonResponse(getMonthlyReport($pdo, $args[0] ?? '', $args[1] ?? ''));
 
-        // --- NEW MI System (0-4 scale) ---
+        // --- NEW MI System (0-4 scale & Multi-Source Triangulation) ---
         case 'getIntelligenceDomains': jsonResponse(getIntelligenceDomains($pdo));
         case 'getObservationSources': jsonResponse(getObservationSources($pdo));
         case 'getObservationContexts': jsonResponse(getObservationContexts($pdo));
+        case 'getEvaluationPeriods': jsonResponse(getEvaluationPeriods($pdo));
+        case 'saveEvaluationPeriod': jsonResponse(saveEvaluationPeriod($pdo, $args[0] ?? []));
+        case 'getPracticalActivities': jsonResponse(getPracticalActivities($pdo, isset($args[0]) ? (int)$args[0] : null));
+        case 'savePracticalActivity': jsonResponse(savePracticalActivity($pdo, $args[0] ?? []));
         case 'submitMIObservation': jsonResponse(submitMIObservation($pdo, $args[0] ?? []));
-        case 'getStudentMIProfileNew': jsonResponse(getStudentMIProfileNew($pdo, $args[0] ?? ''));
+        case 'getStudentMIProfileNew': jsonResponse(getStudentMIProfileNew($pdo, $args[0] ?? '', isset($args[1]) ? (int)$args[1] : null));
+        case 'saveParentInterview': jsonResponse(saveParentInterview($pdo, $args[0] ?? []));
+        case 'saveParentDomainBatch': jsonResponse(saveParentDomainBatch($pdo, $args[0] ?? []));
+        case 'getParentInterview': jsonResponse(getParentInterview($pdo, $args[0] ?? '', isset($args[1]) ? (int)$args[1] : null));
+        case 'generateMIAIPrompt': jsonResponse(generateMIAIPrompt($pdo, $args[0] ?? '', isset($args[1]) ? (int)$args[1] : null));
 
         // --- عملیات مخصوص ادمین (فقط نقش admin) ---
         case 'adminListUsers': requireAdminApi(); jsonResponse(adminListUsers($pdo));
@@ -692,7 +700,7 @@ function getClassMIData(PDO $pdo): array {
 // ============================================================
 
 /**
- * Get all active intelligence domains with indicators
+ * Get all active intelligence domains with indicators and practical activities
  */
 function getIntelligenceDomains(PDO $pdo): array {
     $domains = $pdo->query('SELECT * FROM intelligence_domains WHERE is_active=1 ORDER BY display_order, id')->fetchAll();
@@ -700,13 +708,16 @@ function getIntelligenceDomains(PDO $pdo): array {
     foreach ($domains as $domain) {
         $indicators = $pdo->prepare('SELECT * FROM behavioral_indicators WHERE domain_id=? AND is_active=1 ORDER BY display_order, id');
         $indicators->execute([$domain['id']]);
+        $activities = $pdo->prepare('SELECT * FROM practical_activities WHERE domain_id=? AND is_active=1 ORDER BY id');
+        $activities->execute([$domain['id']]);
         $result[] = [
             'id' => (int)$domain['id'],
             'slug' => $domain['slug'],
             'name_fa' => $domain['name_fa'],
             'icon' => $domain['icon'],
             'scientific_desc' => $domain['scientific_desc'],
-            'indicators' => $indicators->fetchAll()
+            'indicators' => $indicators->fetchAll(),
+            'activities' => $activities->fetchAll()
         ];
     }
     return $result;
@@ -727,124 +738,329 @@ function getObservationContexts(PDO $pdo): array {
 }
 
 /**
- * Submit new MI observation (0-4 scale)
+ * Get evaluation periods (terms/seasons)
+ */
+function getEvaluationPeriods(PDO $pdo): array {
+    $owner = apiOwner();
+    $st = $pdo->prepare('SELECT * FROM evaluation_periods WHERE owner_id=? OR owner_id=0 ORDER BY is_active DESC, id DESC');
+    $st->execute([$owner]);
+    return $st->fetchAll();
+}
+
+/**
+ * Save evaluation period
+ */
+function saveEvaluationPeriod(PDO $pdo, array $data): array {
+    $title = trim((string)($data['title'] ?? ''));
+    if ($title === '') return ['success'=>false, 'msg'=>'عنوان دوره الزامی است'];
+    $startDate = normalizeDateStr($data['start_date'] ?? '');
+    $endDate = normalizeDateStr($data['end_date'] ?? '');
+    $isActive = !empty($data['is_active']) ? 1 : 0;
+    $id = (int)($data['id'] ?? 0);
+    $owner = apiOwner();
+
+    if ($id > 0) {
+        $st = $pdo->prepare('UPDATE evaluation_periods SET title=?, start_date=?, end_date=?, is_active=? WHERE id=? AND (owner_id=? OR owner_id=0)');
+        $st->execute([$title, $startDate ?: null, $endDate ?: null, $isActive, $id, $owner]);
+        return ['success'=>true, 'msg'=>'✅ دوره بروزرسانی شد'];
+    } else {
+        $st = $pdo->prepare('INSERT INTO evaluation_periods (owner_id, title, start_date, end_date, is_active) VALUES (?, ?, ?, ?, ?)');
+        $st->execute([$owner, $title, $startDate ?: null, $endDate ?: null, $isActive]);
+        return ['success'=>true, 'msg'=>'✅ دوره جدید ایجاد شد', 'id'=>(int)$pdo->lastInsertId()];
+    }
+}
+
+/**
+ * Get practical activities (Project Spectrum)
+ */
+function getPracticalActivities(PDO $pdo, ?int $domainId = null): array {
+    if ($domainId) {
+        $st = $pdo->prepare('SELECT a.*, d.name_fa as domain_name, d.icon as domain_icon, d.slug as domain_slug 
+                             FROM practical_activities a 
+                             JOIN intelligence_domains d ON a.domain_id=d.id 
+                             WHERE a.domain_id=? AND a.is_active=1 ORDER BY a.id');
+        $st->execute([$domainId]);
+        return $st->fetchAll();
+    }
+    return $pdo->query('SELECT a.*, d.name_fa as domain_name, d.icon as domain_icon, d.slug as domain_slug 
+                        FROM practical_activities a 
+                        JOIN intelligence_domains d ON a.domain_id=d.id 
+                        WHERE a.is_active=1 ORDER BY d.display_order, a.id')->fetchAll();
+}
+
+/**
+ * Save practical activity
+ */
+function savePracticalActivity(PDO $pdo, array $data): array {
+    $domainId = (int)($data['domain_id'] ?? 0);
+    $title = trim((string)($data['title'] ?? ''));
+    $instructions = trim((string)($data['instructions'] ?? ''));
+    if ($domainId <= 0 || $title === '' || $instructions === '') {
+        return ['success'=>false, 'msg'=>'اطلاعات فعالیت ناقص است'];
+    }
+    $ageGroup = trim((string)($data['age_group'] ?? ''));
+    $toolsNeeded = trim((string)($data['tools_needed'] ?? ''));
+    $timeNeeded = trim((string)($data['time_needed'] ?? ''));
+    $rubric = !empty($data['rubric_criteria']) ? (is_string($data['rubric_criteria']) ? $data['rubric_criteria'] : json_encode($data['rubric_criteria'], JSON_UNESCAPED_UNICODE)) : null;
+    $id = (int)($data['id'] ?? 0);
+
+    if ($id > 0) {
+        $st = $pdo->prepare('UPDATE practical_activities SET domain_id=?, title=?, instructions=?, age_group=?, tools_needed=?, time_needed=?, rubric_criteria=? WHERE id=?');
+        $st->execute([$domainId, $title, $instructions, $ageGroup ?: null, $toolsNeeded ?: null, $timeNeeded ?: null, $rubric, $id]);
+        return ['success'=>true, 'msg'=>'✅ فعالیت ویرایش شد'];
+    } else {
+        $st = $pdo->prepare('INSERT INTO practical_activities (domain_id, title, instructions, age_group, tools_needed, time_needed, rubric_criteria, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)');
+        $st->execute([$domainId, $title, $instructions, $ageGroup ?: null, $toolsNeeded ?: null, $timeNeeded ?: null, $rubric]);
+        return ['success'=>true, 'msg'=>'✅ فعالیت جدید افزوده شد', 'id'=>(int)$pdo->lastInsertId()];
+    }
+}
+
+/**
+ * Get domain recommendations for school & home
+ */
+function getDomainRecommendations(string $domainKey): array {
+    if (mb_strpos($domainKey, 'کلامی') !== false || mb_strpos($domainKey, 'linguistic') !== false) {
+        return [
+            'school' => 'واگذاری نقش قصه‌گو یا مجری در فعالیت‌های کلاسی و ترغیب به بیان آزاد تجربیات روزمره.',
+            'home' => 'قصه‌گویی شبانه مشترک و تشویق کودک به تعریف مجدد داستان با پایان‌بندی دلخواه خودش.'
+        ];
+    }
+    if (mb_strpos($domainKey, 'منطقی') !== false || mb_strpos($domainKey, 'logical') !== false) {
+        return [
+            'school' => 'طرح معماهای گام‌به‌گام و بازی‌های فکری الگویابی بدون شتاب و فشار زمانی.',
+            'home' => 'مشارکت دادن کودک در دسته‌بندی وسایل، خرید روزمره و بازی‌های مبتنی بر قوانین مثل سودوکو.'
+        ];
+    }
+    if (mb_strpos($domainKey, 'فضایی') !== false || mb_strpos($domainKey, 'spatial') !== false) {
+        return [
+            'school' => 'استفاده از نقشه‌ها، نمودارهای تصویری و پروژه‌های ساخت ماکت و نقاشی موضوعی.',
+            'home' => 'فراهم کردن لگو، خمیربازی و کشیدن نقشه مسیرهای رفت‌وآمد روزمره توسط کودک.'
+        ];
+    }
+    if (mb_strpos($domainKey, 'جنبشی') !== false || mb_strpos($domainKey, 'bodily') !== false) {
+        return [
+            'school' => 'تعبیه وقفه‌های کوتاه حرکتی (Brain Breaks) و بازی‌های تیمی پرتحرک و ریتمیک.',
+            'home' => 'فعالیت‌های ورزشی، باغبانی، آشپزی با نظارت و تمرین مهارت‌های دستی و تعادلی.'
+        ];
+    }
+    if (mb_strpos($domainKey, 'موسیق') !== false || mb_strpos($domainKey, 'musical') !== false) {
+        return [
+            'school' => 'پیوند دادن یادگیری با ترانه‌ها، الگوهای ضربی دست زدن و بازشناسی اصوات محیطی.',
+            'home' => 'شنیدن هدفمند نواهای طبیعی و سازها و هم‌خوانی شعرهای کودکانه با حفظ ریتم.'
+        ];
+    }
+    if (mb_strpos($domainKey, 'بین') !== false || mb_strpos($domainKey, 'interpersonal') !== false) {
+        return [
+            'school' => 'سپردن نقش‌های مشارکتی در گروه‌های همیار و تمرین حل تعارض از طریق گفتگو.',
+            'home' => 'گفتگو درباره احساسات اعضای خانواده و مشارکت در کارهای تیمی و کمک به دیگران.'
+        ];
+    }
+    if (mb_strpos($domainKey, 'درون') !== false || mb_strpos($domainKey, 'intrapersonal') !== false) {
+        return [
+            'school' => 'ایجاد فرصت بازتاب فردی (Self-Reflection) در پایان روز و احترام به استقلال کاری کودک.',
+            'home' => 'گفتگوی آرام قبل از خواب پیرامون حس‌های تجربه شده در طول روز و تنظیم اهداف کوچک شخصی.'
+        ];
+    }
+    // طبیعت‌گرا
+    return [
+        'school' => 'کاشتن گیاه در کلاس، مشاهده تغییرات فصلی و ثبت دفترچه یادداشت‌های طبیعت.',
+        'home' => 'حضور در پارک، جمع‌آوری برگ‌ها و سنگ‌ها و توجه به حیوانات خانگی و پرندگان.'
+    ];
+}
+
+/**
+ * Submit new MI observation (Multi-source: Parent, Coach, Practical)
  */
 function submitMIObservation(PDO $pdo, array $data): array {
-    // Permission check
     if (function_exists('effectiveUserCanUseMi') && !effectiveUserCanUseMi()) {
         return ['success'=>false, 'msg'=>'بخش هوش‌های چندگانه برای شما فعال نیست.'];
     }
 
-    // Validation
     $studentName = trim($data['student_name'] ?? '');
-    $indicatorId = (int)($data['indicator_id'] ?? 0);
+    $indicatorId = !empty($data['indicator_id']) ? (int)$data['indicator_id'] : null;
+    $activityId = !empty($data['activity_id']) ? (int)$data['activity_id'] : null;
     $sourceId = (int)($data['source_id'] ?? 0);
+    $periodId = !empty($data['period_id']) ? (int)$data['period_id'] : null;
     $contextId = !empty($data['context_id']) ? (int)$data['context_id'] : null;
     $noOpportunity = !empty($data['no_opportunity']);
-    $score = $noOpportunity ? null : (isset($data['score']) ? (int)$data['score'] : null);
-    $evidence = trim($data['evidence'] ?? '');
-    $observedAt = $data['observed_at'] ?? date('Y-m-d');
+    $isClear = !empty($data['is_clear']);
+    $score = $noOpportunity ? null : (isset($data['score']) && $data['score'] !== '' && $data['score'] !== null ? (int)$data['score'] : null);
+    $assistanceLevel = trim((string)($data['assistance_level'] ?? '')) ?: null;
+    $contextCondition = trim((string)($data['context_condition'] ?? '')) ?: null;
+    $respondentRelation = trim((string)($data['respondent_relation'] ?? '')) ?: null;
+    $evidence = trim((string)($data['evidence'] ?? ($data['evidence_text'] ?? '')));
+    $observedAt = !empty($data['observed_at']) ? normalizeDateStr($data['observed_at']) : date('Y/m/d');
     $sessionId = !empty($data['session_id']) ? (int)$data['session_id'] : null;
 
-    // Get student
     $s = getStudentByName($pdo, $studentName);
     if (!$s) return ['success'=>false, 'msg'=>'دانش‌آموز پیدا نشد'];
 
-    // Validate score
-    if (!$noOpportunity && ($score === null || $score < 0 || $score > 4)) {
+    // Resolve active period if not provided
+    if (!$periodId) {
+        $pRow = $pdo->query('SELECT id FROM evaluation_periods WHERE is_active=1 ORDER BY id DESC LIMIT 1')->fetch();
+        if ($pRow) $periodId = (int)$pRow['id'];
+    }
+
+    // Resolve source if slug was provided
+    if ($sourceId <= 0 && !empty($data['source_slug'])) {
+        $st = $pdo->prepare('SELECT id FROM observation_sources WHERE slug=? LIMIT 1');
+        $st->execute([$data['source_slug']]);
+        $sourceId = (int)$st->fetchColumn();
+    }
+    if ($sourceId <= 0) {
+        return ['success'=>false, 'msg'=>'منبع مشاهده مشخص نیست'];
+    }
+
+    $ownerId = (int)$s['owner_id'];
+    $studentId = (int)$s['id'];
+
+    // If clearing an observation
+    if ($isClear) {
+        if ($indicatorId) {
+            $delSt = $pdo->prepare('DELETE FROM intelligence_observations WHERE owner_id=? AND student_id=? AND period_id=? AND source_id=? AND indicator_id=?');
+            $delSt->execute([$ownerId, $studentId, $periodId, $sourceId, $indicatorId]);
+            return ['success'=>true, 'msg'=>'مشاهده با موفقیت حذف شد'];
+        }
+    }
+
+    // Score validation (if score is present)
+    if (!$noOpportunity && $score !== null && ($score < 0 || $score > 4)) {
         return ['success'=>false, 'msg'=>'امتیاز باید بین ۰ تا ۴ باشد'];
     }
 
-    if ($noOpportunity && $score !== null) {
-        return ['success'=>false, 'msg'=>'نمی‌توان هم‌زمان امتیاز و «فرصت مشاهده نداشتم» را انتخاب کرد'];
-    }
-
-    // Validate indicator exists
-    $indicator = $pdo->prepare('SELECT id FROM behavioral_indicators WHERE id=? AND is_active=1');
-    $indicator->execute([$indicatorId]);
-    if (!$indicator->fetch()) {
-        return ['success'=>false, 'msg'=>'شاخص رفتاری نامعتبر است'];
-    }
-
-    // Validate source exists
-    $source = $pdo->prepare('SELECT id FROM observation_sources WHERE id=? AND is_active=1');
-    $source->execute([$sourceId]);
-    if (!$source->fetch()) {
-        return ['success'=>false, 'msg'=>'منبع مشاهده نامعتبر است'];
-    }
-
-    // Get current user as recorded_by
     $recordedBy = null;
     if (function_exists('currentUser')) {
         $user = currentUser();
         $recordedBy = $user ? (int)$user['id'] : null;
     }
 
-    // Get owner_id from student
-    $ownerId = (int)$s['owner_id'];
+    // Update if already exists for this indicator, source, period, student
+    if ($indicatorId) {
+        $existSt = $pdo->prepare('SELECT id FROM intelligence_observations WHERE owner_id=? AND student_id=? AND period_id=? AND source_id=? AND indicator_id=? LIMIT 1');
+        $existSt->execute([$ownerId, $studentId, $periodId, $sourceId, $indicatorId]);
+        $existId = $existSt->fetchColumn();
+        if ($existId) {
+            $updateSql = 'UPDATE intelligence_observations 
+                          SET score=?, no_opportunity=?, assistance_level=?, context_condition=?, respondent_relation=?, evidence_text=COALESCE(?, evidence_text), session_id=?, observed_at=?, recorded_by=?
+                          WHERE id=?';
+            $pdo->prepare($updateSql)->execute([
+                $score,
+                $noOpportunity ? 1 : 0,
+                $assistanceLevel,
+                $contextCondition,
+                $respondentRelation,
+                $evidence ?: null,
+                $sessionId,
+                $observedAt,
+                $recordedBy,
+                (int)$existId
+            ]);
+            return ['success'=>true, 'msg'=>'✅ مشاهده به‌روزرسانی شد', 'id'=>(int)$existId];
+        }
+    }
 
-    // Insert observation
     $sql = 'INSERT INTO intelligence_observations
-            (owner_id, student_id, indicator_id, source_id, context_id, score, no_opportunity, evidence_text, session_id, observed_at, recorded_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            (owner_id, student_id, period_id, indicator_id, activity_id, source_id, context_id, score, no_opportunity, assistance_level, context_condition, respondent_relation, evidence_text, session_id, observed_at, recorded_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
     $pdo->prepare($sql)->execute([
         $ownerId,
-        $s['id'],
+        $studentId,
+        $periodId,
         $indicatorId,
+        $activityId,
         $sourceId,
         $contextId,
         $score,
         $noOpportunity ? 1 : 0,
+        $assistanceLevel,
+        $contextCondition,
+        $respondentRelation,
         $evidence ?: null,
         $sessionId,
         $observedAt,
         $recordedBy
     ]);
 
-    return ['success'=>true, 'msg'=>'✅ مشاهده ثبت شد', 'id'=>(int)$pdo->lastInsertId()];
+    return ['success'=>true, 'msg'=>'✅ مشاهده با موفقیت ثبت شد', 'id'=>(int)$pdo->lastInsertId()];
 }
 
 /**
- * Calculate domain score with polarity normalization
+ * Save parent domain answers in one unified batch
  */
-function calculateDomainScore(array $observations, array $indicators): ?float {
-    if (empty($observations)) return null;
-
-    // Map indicator_id => category
-    $indicatorMap = [];
-    foreach ($indicators as $ind) {
-        $indicatorMap[(int)$ind['id']] = $ind['indicator_category'];
+function saveParentDomainBatch(PDO $pdo, array $data): array {
+    if (function_exists('effectiveUserCanUseMi') && !effectiveUserCanUseMi()) {
+        return ['success'=>false, 'msg'=>'بخش هوش‌های چندگانه برای شما فعال نیست.'];
     }
 
-    $normalizedScores = [];
-    foreach ($observations as $obs) {
-        if ($obs['no_opportunity']) continue; // Skip no-opportunity
-        if ($obs['score'] === null) continue; // Skip null scores
+    $studentName = trim($data['student_name'] ?? '');
+    $periodId = !empty($data['period_id']) ? (int)$data['period_id'] : null;
+    $domainId = (int)($data['domain_id'] ?? 0);
+    $answers = is_array($data['answers'] ?? null) ? $data['answers'] : [];
+    $evidence = trim((string)($data['evidence'] ?? ''));
+    $observedAt = !empty($data['observed_at']) ? normalizeDateStr($data['observed_at']) : date('Y/m/d');
 
-        $score = (int)$obs['score'];
-        $category = $indicatorMap[(int)$obs['indicator_id']] ?? 'neutral';
+    $s = getStudentByName($pdo, $studentName);
+    if (!$s) return ['success'=>false, 'msg'=>'دانش‌آموز پیدا نشد'];
 
-        // Polarity normalization
-        if ($category === 'negative') {
-            $normalized = 4 - $score; // Invert negative indicators
-        } else {
-            $normalized = $score;
+    if (!$periodId) {
+        $pRow = $pdo->query('SELECT id FROM evaluation_periods WHERE is_active=1 ORDER BY id DESC LIMIT 1')->fetch();
+        if ($pRow) $periodId = (int)$pRow['id'];
+    }
+
+    $sourceSt = $pdo->prepare('SELECT id FROM observation_sources WHERE slug="parent" LIMIT 1');
+    $sourceSt->execute();
+    $sourceId = (int)$sourceSt->fetchColumn();
+    if ($sourceId <= 0) return ['success'=>false, 'msg'=>'منبع والدین یافت نشد'];
+
+    $ownerId = (int)$s['owner_id'];
+    $studentId = (int)$s['id'];
+    $recordedBy = null;
+    if (function_exists('currentUser')) {
+        $user = currentUser();
+        $recordedBy = $user ? (int)$user['id'] : null;
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $isFirst = true;
+        foreach ($answers as $ans) {
+            $indId = (int)($ans['indicator_id'] ?? 0);
+            if (!$indId) continue;
+
+            $noOpp = !empty($ans['no_opportunity']);
+            $score = $noOpp ? null : (isset($ans['score']) && $ans['score'] !== '' && $ans['score'] !== null ? (int)$ans['score'] : null);
+            $evid = $isFirst && $evidence !== '' ? $evidence : null;
+
+            $existSt = $pdo->prepare('SELECT id FROM intelligence_observations WHERE owner_id=? AND student_id=? AND period_id=? AND source_id=? AND indicator_id=? LIMIT 1');
+            $existSt->execute([$ownerId, $studentId, $periodId, $sourceId, $indId]);
+            $existId = $existSt->fetchColumn();
+
+            if ($existId) {
+                $upd = $pdo->prepare('UPDATE intelligence_observations 
+                                      SET score=?, no_opportunity=?, respondent_relation="والد", evidence_text=COALESCE(?, evidence_text), observed_at=?, recorded_by=?
+                                      WHERE id=?');
+                $upd->execute([$score, $noOpp ? 1 : 0, $evid, $observedAt, $recordedBy, (int)$existId]);
+            } else {
+                $ins = $pdo->prepare('INSERT INTO intelligence_observations 
+                                      (owner_id, student_id, period_id, indicator_id, source_id, score, no_opportunity, respondent_relation, evidence_text, observed_at, recorded_by)
+                                      VALUES (?, ?, ?, ?, ?, ?, ?, "والد", ?, ?, ?)');
+                $ins->execute([$ownerId, $studentId, $periodId, $indId, $sourceId, $score, $noOpp ? 1 : 0, $evid, $observedAt, $recordedBy]);
+            }
+            $isFirst = false;
         }
-
-        $normalizedScores[] = $normalized;
+        $pdo->commit();
+        return ['success'=>true, 'msg'=>'✅ پاسخ‌های والدین این بخش با موفقیت ثبت شد'];
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        return ['success'=>false, 'msg'=>'خطا در ذخیره‌سازی: ' . $e->getMessage()];
     }
-
-    if (empty($normalizedScores)) return null;
-
-    return round(array_sum($normalizedScores) / count($normalizedScores), 2);
 }
 
 /**
- * Get new MI profile for student (0-4 system)
+ * Get triangulated multi-source MI profile for student
  */
-function getStudentMIProfileNew(PDO $pdo, string $studentName): array {
-    // Permission check
+function getStudentMIProfileNew(PDO $pdo, string $studentName, ?int $periodId = null): array {
     if (function_exists('effectiveUserCanUseMi') && !effectiveUserCanUseMi()) {
         return ['success'=>false, 'msg'=>'دسترسی به هوش‌های چندگانه ندارید'];
     }
@@ -855,65 +1071,224 @@ function getStudentMIProfileNew(PDO $pdo, string $studentName): array {
     $studentId = (int)$student['id'];
     $ownerId = (int)$student['owner_id'];
 
-    // Get all domains with indicators
+    // Periods
+    $periods = getEvaluationPeriods($pdo);
+    if (!$periodId) {
+        foreach ($periods as $p) {
+            if (!empty($p['is_active'])) {
+                $periodId = (int)$p['id'];
+                break;
+            }
+        }
+        if (!$periodId && !empty($periods)) {
+            $periodId = (int)$periods[0]['id'];
+        }
+    }
+
+    // Get all domains with indicators and activities
     $domains = getIntelligenceDomains($pdo);
 
-    // Get all observations for this student
-    $obs = $pdo->prepare('SELECT * FROM intelligence_observations
-                          WHERE owner_id=? AND student_id=?
-                          ORDER BY observed_at DESC, id DESC');
-    $obs->execute([$ownerId, $studentId]);
-    $allObservations = $obs->fetchAll();
+    // Query observations for this student
+    $params = [$ownerId, $studentId];
+    $sql = 'SELECT o.*, 
+                   src.slug as source_slug, src.name_fa as source_name,
+                   ind.indicator_text, ind.indicator_category,
+                   act.title as activity_title, act.rubric_criteria
+            FROM intelligence_observations o
+            LEFT JOIN observation_sources src ON o.source_id = src.id
+            LEFT JOIN behavioral_indicators ind ON o.indicator_id = ind.id
+            LEFT JOIN practical_activities act ON o.activity_id = act.id
+            WHERE o.owner_id=? AND o.student_id=?';
+    if ($periodId) {
+        $sql .= ' AND (o.period_id=? OR o.period_id IS NULL)';
+        $params[] = $periodId;
+    }
+    $sql .= ' ORDER BY o.observed_at DESC, o.id DESC';
+
+    $obsStmt = $pdo->prepare($sql);
+    $obsStmt->execute($params);
+    $allObservations = $obsStmt->fetchAll();
 
     $result = [];
-    $hasAnyData = false;
+    $hasAnyNewData = count($allObservations) > 0;
 
     foreach ($domains as $domain) {
         $domainId = (int)$domain['id'];
+        $indicatorIds = array_map(fn($i) => (int)$i['id'], $domain['indicators']);
+        $activityIds = array_map(fn($a) => (int)$a['id'], $domain['activities']);
 
         // Filter observations for this domain
-        $indicatorIds = array_map(fn($i) => (int)$i['id'], $domain['indicators']);
-        $domainObservations = array_filter($allObservations, fn($o) => in_array((int)$o['indicator_id'], $indicatorIds));
+        $domainObservations = array_filter($allObservations, function($o) use ($indicatorIds, $activityIds) {
+            if ($o['indicator_id'] && in_array((int)$o['indicator_id'], $indicatorIds, true)) return true;
+            if ($o['activity_id'] && in_array((int)$o['activity_id'], $activityIds, true)) return true;
+            return false;
+        });
 
-        // Get latest observation per indicator per source
-        $latestByIndicatorSource = [];
-        foreach ($domainObservations as $observation) {
-            $key = $observation['indicator_id'] . '_' . $observation['source_id'];
-            if (!isset($latestByIndicatorSource[$key])) {
-                $latestByIndicatorSource[$key] = $observation;
+        // 1. Parent Observations
+        $parentObs = array_filter($domainObservations, fn($o) => $o['source_slug'] === 'parent');
+        $parentScores = [];
+        $parentEvidences = [];
+        $parentRespondents = [];
+        $parentNoOppCount = 0;
+        foreach ($parentObs as $po) {
+            if (!empty($po['no_opportunity'])) {
+                $parentNoOppCount++;
+            } elseif ($po['score'] !== null) {
+                $score = (int)$po['score'];
+                if (($po['indicator_category'] ?? '') === 'negative') {
+                    $score = 4 - $score;
+                }
+                $parentScores[] = $score;
+            }
+            if (!empty($po['evidence_text'])) {
+                $parentEvidences[] = [
+                    'text' => $po['evidence_text'],
+                    'date' => $po['observed_at'],
+                    'relation' => $po['respondent_relation'] ?: 'والد'
+                ];
+            }
+            if (!empty($po['respondent_relation']) && !in_array($po['respondent_relation'], $parentRespondents, true)) {
+                $parentRespondents[] = $po['respondent_relation'];
+            }
+        }
+        $parentAvg = count($parentScores) > 0 ? round(array_sum($parentScores) / count($parentScores), 1) : null;
+
+        $parentStates = [];
+        foreach ($parentObs as $po) {
+            $indId = (int)$po['indicator_id'];
+            if ($indId && !isset($parentStates[$indId])) {
+                $parentStates[$indId] = [
+                    'score' => $po['no_opportunity'] ? null : (int)$po['score'],
+                    'no_opportunity' => !empty($po['no_opportunity']),
+                    'evidence' => $po['evidence_text'],
+                    'relation' => $po['respondent_relation'] ?: 'والد'
+                ];
             }
         }
 
-        // Calculate domain score
-        $score = calculateDomainScore(array_values($latestByIndicatorSource), $domain['indicators']);
+        // 2. Teacher Observations
+        $teacherObs = array_filter($domainObservations, fn($o) => $o['source_slug'] === 'teacher');
+        $teacherIndependence = ['independent' => 0, 'with_reminder' => 0, 'with_help' => 0];
+        $teacherEvidences = [];
+        $teacherStates = [];
+        foreach ($teacherObs as $to) {
+            $lvl = $to['assistance_level'] ?? '';
+            if ($lvl === 'مستقل') $teacherIndependence['independent']++;
+            elseif ($lvl === 'با یادآوری') $teacherIndependence['with_reminder']++;
+            elseif ($lvl === 'با کمک مستقیم') $teacherIndependence['with_help']++;
 
-        // Calculate coverage
-        $validObservations = array_filter($latestByIndicatorSource, fn($o) => !$o['no_opportunity'] && $o['score'] !== null);
-        $coverage = count($domain['indicators']) > 0
-            ? round(count($validObservations) / count($domain['indicators']) * 100, 1)
-            : 0;
+            if (!empty($to['evidence_text'])) {
+                $teacherEvidences[] = [
+                    'text' => $to['evidence_text'],
+                    'date' => $to['observed_at'],
+                    'assistance' => $to['assistance_level'] ?: 'ثبت عادی'
+                ];
+            }
 
-        if ($score !== null) $hasAnyData = true;
+            $indId = (int)$to['indicator_id'];
+            if ($indId && !isset($teacherStates[$indId])) {
+                $teacherStates[$indId] = [
+                    'assistance' => $to['assistance_level'],
+                    'score' => (int)$to['score'],
+                    'evidence' => $to['evidence_text']
+                ];
+            }
+        }
+
+        // 3. Practical Activity Observations
+        $practicalObs = array_filter($domainObservations, fn($o) => $o['source_slug'] === 'practical' || !empty($o['activity_id']));
+        $practicalResults = [];
+        $practicalStates = [];
+        foreach ($practicalObs as $pro) {
+            $practicalResults[] = [
+                'activity_title' => $pro['activity_title'] ?: 'چالش عملی',
+                'score' => $pro['score'],
+                'assistance' => $pro['assistance_level'] ?: 'ثبت نشده',
+                'condition' => $pro['context_condition'] ?: 'عادی',
+                'evidence' => $pro['evidence_text'] ?: '',
+                'date' => $pro['observed_at']
+            ];
+
+            $actId = (int)$pro['activity_id'];
+            if ($actId && !isset($practicalStates[$actId])) {
+                $practicalStates[$actId] = [
+                    'score' => (int)$pro['score'],
+                    'assistance' => $pro['assistance_level'],
+                    'condition' => $pro['context_condition'],
+                    'evidence' => $pro['evidence_text']
+                ];
+            }
+        }
+
+        // Triangulation & Insights
+        $totalObsCount = count($parentObs) + count($teacherObs) + count($practicalObs);
+        $isSufficient = $totalObsCount >= 2;
+
+        // Cross-context insight generation
+        $insight = '';
+        if (!$isSufficient) {
+            $insight = 'تعداد شواهد ثبت‌شده در این بازه زمانی کمتر از حد نصاب است (شواهد ناکافی جهت ارزیابی). ثبت مشاهدات بیشتر از خانه یا کلاس برای تحلیل دقیق‌تر پیشنهاد می‌شود.';
+        } else {
+            $hasHighParent = ($parentAvg !== null && $parentAvg >= 2.8);
+            $hasTeacherPresence = count($teacherObs) >= 1;
+
+            if ($hasHighParent && !$hasTeacherPresence) {
+                $insight = 'این توانمندی در محیط امن خانه مکرراً بروز یافته اما در فضای کلاس شواهد کمی ثبت شده است. این تفاوت محیطی نشان می‌دهد متربی در حضور جمع نیاز به ایجاد حس امنیت و ابراز وجود در گروه‌های کوچک‌تر دارد.';
+            } elseif (!$hasHighParent && $hasTeacherPresence && $teacherIndependence['independent'] > 0) {
+                $insight = 'این رفتار در موقعیت‌های تعاملی و هدفمند کلاسی ظهور پررنگ و مستقلی داشته است. تشویق به انجام فعالیت‌های مشابه در منزل به تثبیت توانمندی کمک می‌کند.';
+            } elseif ($hasHighParent && $hasTeacherPresence) {
+                $insight = 'هم‌پوشانی و انسجام بالایی میان مشاهدات خانه و کلاس وجود دارد که بیانگر پایداری و خودانگیختگی این مهارت در محیط‌های گوناگون است.';
+            } else {
+                $insight = 'شواهد ثبت‌شده رو به رشد بوده و رفتار در موقعیت‌های گوناگون در حال تکوین و مشاهده است.';
+            }
+        }
+
+        $recs = getDomainRecommendations($domain['slug'] ?: $domain['name_fa']);
 
         $result[] = [
             'domain' => [
                 'id' => $domainId,
                 'slug' => $domain['slug'],
                 'name_fa' => $domain['name_fa'],
-                'icon' => $domain['icon']
+                'icon' => $domain['icon'],
+                'scientific_desc' => $domain['scientific_desc'],
+                'indicators' => $domain['indicators'],
+                'activities' => $domain['activities']
             ],
-            'score' => $score,
-            'max_score' => 4,
-            'coverage' => $coverage,
-            'has_data' => $score !== null,
-            'observation_count' => count($latestByIndicatorSource)
+            'sources' => [
+                'parent' => [
+                    'count' => count($parentObs),
+                    'valid_count' => count($parentScores),
+                    'no_opportunity_count' => $parentNoOppCount,
+                    'avg_score' => $parentAvg,
+                    'respondents' => $parentRespondents,
+                    'evidences' => array_slice($parentEvidences, 0, 5),
+                    'states' => $parentStates
+                ],
+                'teacher' => [
+                    'count' => count($teacherObs),
+                    'independence' => $teacherIndependence,
+                    'evidences' => array_slice($teacherEvidences, 0, 5),
+                    'states' => $teacherStates
+                ],
+                'practical' => [
+                    'count' => count($practicalResults),
+                    'activities' => array_slice($practicalResults, 0, 5),
+                    'states' => $practicalStates
+                ]
+            ],
+            'total_observations' => $totalObsCount,
+            'is_sufficient' => $isSufficient,
+            'cross_context_insight' => $insight,
+            'recommendations' => $recs,
+            'recent_observations' => array_slice(array_values($domainObservations), 0, 10)
         ];
     }
 
-    // Get legacy history
-    $legacyHistory = [];
-    $legacyQuery = $pdo->prepare('SELECT * FROM mi_logs_legacy WHERE student_id=? ORDER BY log_date DESC LIMIT 20');
+    // 297 Legacy records check
+    $legacyQuery = $pdo->prepare('SELECT * FROM mi_logs_legacy WHERE student_id=? ORDER BY log_date DESC LIMIT 50');
     $legacyQuery->execute([$studentId]);
+    $legacyHistory = [];
     foreach ($legacyQuery as $row) {
         $legacyHistory[] = [
             'legacy' => true,
@@ -925,9 +1300,183 @@ function getStudentMIProfileNew(PDO $pdo, string $studentName): array {
     }
 
     return [
+        'success' => true,
+        'student' => ['id' => $studentId, 'name' => $student['name']],
+        'periods' => $periods,
+        'current_period_id' => $periodId,
         'domains' => $result,
-        'has_data' => $hasAnyData,
-        'legacy_history' => $legacyHistory
+        'has_data' => ($hasAnyNewData || count($legacyHistory) > 0),
+        'legacy_history' => $legacyHistory,
+        'parent_interview' => getParentInterview($pdo, $studentName, $periodId)
+    ];
+}
+
+/**
+ * ذخیره سوالات تشریحی و تکمیلی مصاحبه با والدین (صفحات ۸ و ۹ فرم)
+ */
+function saveParentInterview(PDO $pdo, array $data): array {
+    $studentName = trim($data['student_name'] ?? '');
+    $s = getStudentByName($pdo, $studentName);
+    if (!$s) return ['success' => false, 'msg' => 'دانش‌آموز یافت نشد'];
+
+    $ownerId = (int)$s['owner_id'];
+    $studentId = (int)$s['id'];
+    $periodId = !empty($data['period_id']) ? (int)$data['period_id'] : null;
+
+    $st = $pdo->prepare('SELECT id FROM mi_parent_interviews WHERE owner_id=? AND student_id=? AND (period_id=? OR (period_id IS NULL AND ? IS NULL)) LIMIT 1');
+    $st->execute([$ownerId, $studentId, $periodId, $periodId]);
+    $existingId = $st->fetchColumn();
+
+    if ($existingId) {
+        $sql = 'UPDATE mi_parent_interviews SET
+                free_time = ?, extracurricular = ?, feels_capable = ?,
+                spontaneous_interest = ?, top_talent_example = ?, hidden_talent_school = ?,
+                three_words = ?, note_for_coach = ?, additional_notes = ?,
+                respondent_name = ?, updated_at = NOW()
+                WHERE id = ?';
+        $pdo->prepare($sql)->execute([
+            $data['free_time'] ?? null,
+            $data['extracurricular'] ?? null,
+            $data['feels_capable'] ?? null,
+            $data['spontaneous_interest'] ?? null,
+            $data['top_talent_example'] ?? null,
+            $data['hidden_talent_school'] ?? null,
+            $data['three_words'] ?? null,
+            $data['note_for_coach'] ?? null,
+            $data['additional_notes'] ?? null,
+            $data['respondent_name'] ?? null,
+            $existingId
+        ]);
+        return ['success' => true, 'msg' => '✅ پاسخ‌های تکمیلی والدین به‌روزرسانی شد', 'id' => (int)$existingId];
+    } else {
+        $sql = 'INSERT INTO mi_parent_interviews
+                (owner_id, student_id, period_id, free_time, extracurricular, feels_capable,
+                 spontaneous_interest, top_talent_example, hidden_talent_school,
+                 three_words, note_for_coach, additional_notes, respondent_name)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        $pdo->prepare($sql)->execute([
+            $ownerId, $studentId, $periodId,
+            $data['free_time'] ?? null,
+            $data['extracurricular'] ?? null,
+            $data['feels_capable'] ?? null,
+            $data['spontaneous_interest'] ?? null,
+            $data['top_talent_example'] ?? null,
+            $data['hidden_talent_school'] ?? null,
+            $data['three_words'] ?? null,
+            $data['note_for_coach'] ?? null,
+            $data['additional_notes'] ?? null,
+            $data['respondent_name'] ?? null
+        ]);
+        return ['success' => true, 'msg' => '✅ پاسخ‌های تکمیلی والدین با موفقیت ثبت شد', 'id' => (int)$pdo->lastInsertId()];
+    }
+}
+
+/**
+ * دریافت پاسخ‌های مصاحبه تکمیلی والدین
+ */
+function getParentInterview(PDO $pdo, string $studentName, ?int $periodId = null): ?array {
+    $s = getStudentByName($pdo, $studentName);
+    if (!$s) return null;
+    $params = [(int)$s['owner_id'], (int)$s['id']];
+    $sql = 'SELECT * FROM mi_parent_interviews WHERE owner_id=? AND student_id=?';
+    if ($periodId) {
+        $sql .= ' AND (period_id=? OR period_id IS NULL)';
+        $params[] = $periodId;
+    }
+    $sql .= ' ORDER BY id DESC LIMIT 1';
+    $st = $pdo->prepare($sql);
+    $st->execute($params);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    return $row ?: null;
+}
+
+/**
+ * تولید پرامپت و پرونده تحلیلی جامع برای هوش مصنوعی (ChatGPT / Claude / Gemini)
+ */
+function generateMIAIPrompt(PDO $pdo, string $studentName, ?int $periodId = null): array {
+    $profile = getStudentMIProfileNew($pdo, $studentName, $periodId);
+    if (empty($profile['domains'])) {
+        return ['success' => false, 'msg' => 'داده‌ای برای این دانش‌آموز ثبت نشده است'];
+    }
+
+    $student = getStudentByName($pdo, $studentName);
+    $interview = $profile['parent_interview'] ?? null;
+
+    $prompt = "# پرونده استعدادیابی و تحلیل هوش‌های چندگانه (هاوارد گاردنر & پروژه اسپکتروم هاروارد)\n\n";
+    $prompt .= "## مشخصات متربی\n";
+    $prompt .= "- **نام و نام خانوادگی:** {$studentName}\n";
+    if (!empty($student['dob'])) $prompt .= "- **تاریخ تولد / سن:** {$student['dob']}\n";
+    if (!empty($student['school'])) $prompt .= "- **مدرسه / مرکز:** {$student['school']}\n";
+    if (!empty($student['parent_note'])) $prompt .= "- **یادداشت پرونده:** {$student['parent_note']}\n";
+    $prompt .= "- **تاریخ استخراج پرونده:** " . date('Y/m/d') . "\n\n";
+
+    $prompt .= "---\n\n";
+    $prompt .= "## ۱. نمایه ۸ حوزه هوش (گزارش تفکیک‌شده ۳ منبع: خانه، کلاس و بازی عملی)\n\n";
+
+    foreach ($profile['domains'] as $dItem) {
+        $d = $dItem['domain'];
+        $src = $dItem['sources'];
+        $prompt .= "### {$d['icon']} {$d['name_fa']}\n";
+
+        // ۱. خانه و والدین
+        $pAvg = $src['parent']['avg_score'] !== null ? "{$src['parent']['avg_score']} از ۴" : "بدون نمره عددی";
+        $prompt .= "- **گزارش خانواده (خانه):** میانگین نمره: {$pAvg} (تعداد گویه‌های معتبر: {$src['parent']['valid_count']} | بدون فرصت تجربه در منزل: {$src['parent']['no_opportunity_count']})\n";
+
+        if (!empty($src['parent']['evidences'])) {
+            foreach ($src['parent']['evidences'] as $ev) {
+                $prompt .= "  - *نمونه رفتار عینی در منزل:* «" . $ev['text'] . "»\n";
+            }
+        }
+
+        // ۲. مربی در کلاس
+        $indep = $src['teacher']['independence'];
+        $prompt .= "- **مشاهدات مربی در کلاس:** {$src['teacher']['count']} رخداد ثبت‌شده (مستقل: {$indep['independent']} | با راهنمایی کوتاه: {$indep['with_reminder']} | با کمک مستقیم: {$indep['with_help']})\n";
+
+        // ۳. بازی و چالش عملی
+        if (!empty($src['practical']['activities'])) {
+            $act = $src['practical']['activities'][0];
+            $lvl = $act['score'] == 3 ? '🌟 تسلط کامل' : ($act['score'] == 2 ? '✨ دستیابی نسبی' : '🌱 نیازمند تمرین');
+            $prompt .= "- **بازی عملی:** {$act['activity_title']} -> عملکرد: {$lvl} (میزان استقلال: {$act['assistance']})\n";
+        }
+
+        // ۴. سرنخ محیطی
+        if (!empty($dItem['cross_context_insight'])) {
+            $prompt .= "- **سرنخ تطبیقی محیطی:** {$dItem['cross_context_insight']}\n";
+        }
+        $prompt .= "\n";
+    }
+
+    // ۲. پاسخ‌های تکمیلی صفحات ۸ و ۹ پرسشنامه
+    if ($interview) {
+        $prompt .= "---\n\n";
+        $prompt .= "## ۲. مصاحبه تکمیلی و روایت‌های تشریحی خانواده (شناخت عمیق‌تر)\n\n";
+        if (!empty($interview['free_time'])) $prompt .= "۱. **گذران اوقات آزاد:** {$interview['free_time']}\n\n";
+        if (!empty($interview['extracurricular'])) $prompt .= "۲. **کلاس‌ها و فعالیت‌های فوق‌برنامه:** {$interview['extracurricular']}\n\n";
+        if (!empty($interview['feels_capable'])) $prompt .= "۳. **احساس توانمندی در چه کاری بیشتر است:** {$interview['feels_capable']}\n\n";
+        if (!empty($interview['spontaneous_interest'])) $prompt .= "۴. **فعالیت خودانگیخته با علاقه و بدون اجبار:** {$interview['spontaneous_interest']}\n\n";
+        if (!empty($interview['top_talent_example'])) $prompt .= "۵. **یک توانمندی برجسته به همراه مثال واقعی:** {$interview['top_talent_example']}\n\n";
+        if (!empty($interview['hidden_talent_school'])) $prompt .= "۶. **استعداد با فرصت بروز کمتر در مدرسه یا جمع:** {$interview['hidden_talent_school']}\n\n";
+        if (!empty($interview['three_words'])) $prompt .= "۷. **توصیف فرزند با سه کلمه توسط والد:** {$interview['three_words']}\n\n";
+        if (!empty($interview['note_for_coach'])) $prompt .= "۸. **مهم‌ترین چیزی که دوست دارید مربی درباره فرزندتان بداند:** {$interview['note_for_coach']}\n\n";
+        if (!empty($interview['additional_notes'])) $prompt .= "۹. **نکات تکمیلی و پایانی:** {$interview['additional_notes']}\n\n";
+    }
+
+    $prompt .= "---\n\n";
+    $prompt .= "## ۳. دستورالعمل تخصصی تحلیل برای هوش مصنوعی (System Instructions)\n\n";
+    $prompt .= "شما یک **روان‌شناس ارشد تربیتی و متخصص استعدادیابی کودکان بر مبنای نظریه هوش‌های چندگانه هاوارد گاردنر و پروژه اسپکتروم دانشگاه هاروارد** هستید.\n";
+    $prompt .= "با مطالعه دقیق اطلاعات فوق، لطفاً یک گزارش تحلیلی عمیق، علمی، شیوا و راهبردی به زبان فارسی در ۷ محور زیر تدوین کنید:\n\n";
+    $prompt .= "۱. **کانون‌های برجسته استعداد (Entry Points):** شناسایی ۳ هوش برتر کودک و تحلیل سبک یادگیری و درک جهان توسط او.\n";
+    $prompt .= "۲. **خوشه‌بندی و ترکیب هم‌افزای هوش‌ها (Intelligence Clusters):** تحلیل اثر هم‌نشینی هوش‌های برتر (مثلاً هم‌نشینی کلامی و بین‌فردی جهت رهبری، یا منطقی و فضایی جهت مهندسی و خلق).\n";
+    $prompt .= "۳. **تفکیک هوشمندانه شکاف فرصت در برابر ضعف مهارتی:** بررسی گزینه‌های «فرصت تجربه نبوده» و ارائه راهکار ایجاد فرصت در محیط خانواده.\n";
+    $prompt .= "۴. **تحلیل تطبیقی تفاوت رفتار در خانه در برابر کلاس:** واکاوی علل روان‌شناختی تفاوت عملکرد بین محیط امن منزل و جمع کلاسی (ریشه‌یابی اضطراب، کم‌رویی، یا برعکس شکوفایی در جمع).\n";
+    $prompt .= "۵. **برنامه اقدام ۵ گامی برای مربی در کلاس:** ۵ راهکار بسیار عملیاتی برای مربی جهت استفاده از نقاط قوت کودک برای تقویت مباحث درسی و گروهی.\n";
+    $prompt .= "۶. **بسته راهنمای کاربردی برای خانواده در منزل:** بازی‌ها، چالش‌ها و رفتارهای حمایتی والدین در محیط خانه بدون ایجاد فشار یا برچسب‌زدن.\n";
+    $prompt .= "۷. **افق‌گشایی بلندمدت (رشته‌ها، هنرها و مسیرهای مهارتی آینده):** معرفی حوزه‌های مهارتی، هنری، ورزشی و شغلی بالقوه که این کودک می‌تواند در آن‌ها بدرخشد.\n";
+
+    return [
+        'success' => true,
+        'prompt' => $prompt,
+        'filename' => 'گزارش_استعدادیابی_' . str_replace(' ', '_', $studentName) . '.md'
     ];
 }
 

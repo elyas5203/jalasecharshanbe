@@ -76,12 +76,12 @@ class Chart {
   _barVertical(labels, data, ds, w, h) {
     const c=this.ctx, pad={l:32,r:16,t:20,b:58}, x=pad.l, y=pad.t, cw=w-pad.l-pad.r, ch=h-pad.t-pad.b;
     const max=Math.max(5,...data); this._grid(x,y,cw,ch); const gap=8, bw=Math.max(14,(cw/labels.length)-gap);
-    labels.forEach((lb,i)=>{ const bh=(Math.max(0,data[i])/max)*ch, bx=x+i*(cw/labels.length)+(cw/labels.length-bw)/2, by=y+ch-bh; c.fillStyle=ds.backgroundColor||'#4f46e5'; this._roundRect(bx,by,bw,bh,6); c.fill(); c.fillStyle='#334155'; c.textAlign='center'; c.fillText(this._fmt(data[i]), bx+bw/2, by-5); c.save(); c.translate(bx+bw/2,h-18); c.rotate(-0.55); c.fillStyle='#64748b'; c.fillText(this._fmt(String(lb).replace(/ .*/,'')),0,0); c.restore(); });
+    labels.forEach((lb,i)=>{ const bh=(Math.max(0,data[i])/max)*ch, bx=x+i*(cw/labels.length)+(cw/labels.length-bw)/2, by=y+ch-bh; const barColor = Array.isArray(ds.backgroundColor) ? (ds.backgroundColor[i] || '#4f46e5') : (ds.backgroundColor || '#4f46e5'); c.fillStyle=barColor; this._roundRect(bx,by,bw,bh,6); c.fill(); c.fillStyle='#334155'; c.textAlign='center'; c.fillText(this._fmt(data[i]), bx+bw/2, by-5); c.save(); c.translate(bx+bw/2,h-18); c.rotate(-0.55); c.fillStyle='#64748b'; c.fillText(this._fmt(String(lb).replace(/ .*/,'')),0,0); c.restore(); });
   }
   _barHorizontal(labels, data, ds, w, h) {
     const c=this.ctx, pad={l:26,r:120,t:16,b:20}, x=pad.l, y=pad.t, cw=w-pad.l-pad.r, ch=h-pad.t-pad.b;
     const max=Math.max(5,...data); const row=ch/labels.length;
-    labels.forEach((lb,i)=>{ const by=y+i*row+row*0.22, bh=Math.max(12,row*0.52), bw=(Math.max(0,data[i])/max)*cw; c.fillStyle='#eef2ff'; this._roundRect(x,by,cw,bh,7); c.fill(); c.fillStyle=ds.backgroundColor||'#4f46e5'; this._roundRect(x,by,bw,bh,7); c.fill(); c.fillStyle='#334155'; c.textAlign='right'; c.fillText(this._fmt(lb), w-10, by+bh*0.75); c.textAlign='left'; c.fillText(this._fmt(data[i]), x+bw+5, by+bh*0.75); });
+    labels.forEach((lb,i)=>{ const by=y+i*row+row*0.22, bh=Math.max(12,row*0.52), bw=(Math.max(0,data[i])/max)*cw; c.fillStyle='#eef2ff'; this._roundRect(x,by,cw,bh,7); c.fill(); const barColor = Array.isArray(ds.backgroundColor) ? (ds.backgroundColor[i] || '#4f46e5') : (ds.backgroundColor || '#4f46e5'); c.fillStyle=barColor; this._roundRect(x,by,bw,bh,7); c.fill(); c.fillStyle='#334155'; c.textAlign='right'; c.fillText(this._fmt(lb), w-10, by+bh*0.75); c.textAlign='left'; c.fillText(this._fmt(data[i]), x+bw+5, by+bh*0.75); });
   }
   _handlePointer(event) {
     if (!this._points || !this._points.length) return;

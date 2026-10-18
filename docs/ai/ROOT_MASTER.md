@@ -153,3 +153,13 @@ flowchart TD
 - **اسناد فرزند اجرایی (Child Task Masters):**
   - [MASTER-01: کالبدشکافی وضعیت موجود و انتقال از نسخه قدیمی](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_01_SYSTEM_BASELINE.md)
   - [MASTER-02: بازطراحی بنیادین رابط و تجربه کاربری (UI/UX Redesign)](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_02_UI_UX_REDESIGN.md)
+  - [MASTER-03: زبان طراحی شیشه‌ای مایع آیفون (iOS Liquid Glass)](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_03_IOS_LIQUID_GLASS.md)
+  - [MASTER-04: معماری صفحات ماژولار و تفکیک هدر و ناوبری](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_04_MODULAR_PAGES_ARCHITECTURE.md)
+  - [MASTER-05: فرمول امتیازدهی تاخیر و مدل تصاعدی انضباط](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_05_TARDINESS_SCORING_FORMULA.md)
+  - [MASTER-06: ثبت علت غیبت و گزارش پیامکی اولیا](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_06_ABSENCE_REASON_RECORDING.md)
+  - [MASTER-07: سامانه جامع استعدادیابی و ارزیابی چندمنبعی هوش‌های چندگانه](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_07_MULTIPLE_INTELLIGENCES_MULTI_SOURCE_ASSESSMENT.md)
+  - [MASTER-08: استاندارد نمایش و گزارش‌دهی آمار حضور و غیاب و تاخیرات متربیان](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_08_ATTENDANCE_STATS_PRESENTATION.md)
+  - [MASTER-09: مهندسی ارگونومی بصری، راحتی چشم و شیشه مات استاندارد استودیویی](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_09_ENGINEERED_VISUAL_DESIGN_AND_EYE_COMFORT.md)
+  - [MASTER-10: معماری سلسله‌مراتبی والد-فرزند هوش‌های چندگانه و موتور صدور کارنامه هوشمند](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_10_PARENT_CHILD_MI_HIERARCHY_AND_REPORT_CARD.md)
+  - [MASTER-11: بازطراحی جامع و شکیل سیستم به سبک لیکویید گلس فوق پیشرفته ۲۰۲۶ (Ultra Liquid Glass System Redesign)](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_11_TOTAL_SYSTEM_REDESIGN_ULTRA_LIQUID_GLASS.md)
+

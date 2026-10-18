@@ -4,4 +4,5 @@
   <div class="ios-blob blob-2"></div>
   <div class="ios-blob blob-3"></div>
   <div class="ios-blob blob-4"></div>
+  <div class="ios-blob blob-5"></div>
 </div>

@@ -1,3 +1,17 @@
+  // --- توابع عمومی کمکی، امنیت رشته‌ها و خروج از بحران XSS ---
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+  if (typeof window !== 'undefined') {
+    window.escapeHtml = escapeHtml;
+  }
+
   let DB={}, TEMP={}, chartInst=null, miChart=null, growthChart=null, classMIChart=null, currentStudent=null;
   const lazyLoads = {};
   const attendanceHistoryState = { offset: 0, limit: 80, done: false, loading: false };
@@ -176,8 +190,19 @@
   function switchTab(t){
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
-    if(event && event.target) event.target.classList.add('active');
-    document.getElementById('tab-'+t).classList.add('active');
+    const tabBtn = document.querySelector(`.tab[onclick*="'${t}'"]`) || (typeof event !== 'undefined' && event && event.target && event.target.closest('.tab'));
+    if(tabBtn) tabBtn.classList.add('active');
+    const target = document.getElementById('tab-'+t);
+    if(target) target.classList.add('active');
+    if (t === 'mi' && window.renderMIHub && currentStudent) {
+      window.renderMIHub(currentStudent);
+    }
+    if (t === 'stats') {
+      setTimeout(() => {
+        if (miChart && typeof miChart.draw === 'function') miChart.draw();
+        if (growthChart && typeof growthChart.draw === 'function') growthChart.draw();
+      }, 50);
+    }
   }
 
   function toPersianNum(n) {
@@ -286,14 +311,21 @@
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
     localStorage.setItem('chsh_dark_theme', isDark ? '1' : '0');
+    updateThemeIcon(isDark);
+  }
+  function updateThemeIcon(isDark) {
+    const el = document.querySelector('.theme-icon');
+    if (el) el.textContent = isDark ? '☀️' : '🌙';
   }
   window.toggleDark = toggleDark;
 
   window.addEventListener('load', () => {
     try {
-      if (localStorage.getItem('chsh_dark_theme') === '1') {
+      const isDark = localStorage.getItem('chsh_dark_theme') === '1';
+      if (isDark) {
         document.body.classList.add('dark-mode');
       }
+      updateThemeIcon(isDark);
       const t=new Date().toLocaleDateString('fa-IR');
       document.querySelectorAll('.to-persian').forEach(i=>i.value=toPersianNum(t));
       initPersianInputs();
@@ -647,6 +679,7 @@
       document.getElementById('sp-medical').value=i.medical || "";
       document.querySelectorAll('#view-single-profile input, #view-single-profile textarea').forEach(persianizeInputValue);
       renderMIChart(d.mi.chart); renderMIAccordion(d.mi.config, n, d.mi.traitStates); renderFullHistory(d.fullHistory); renderGrowthChart(d.stats.growth); renderSummaryStats(d.stats.stats);
+      if (window.renderMIHub) window.renderMIHub(n);
       nav('single-profile');
     }).withFailureHandler(e => { hideLoading(); showAlert("خطا در بارگذاری پروفایل: " + e.message, 'error'); }).getFullStudentProfile(n);
   }
@@ -846,15 +879,37 @@
   function renderMIChart(d){
     if(typeof Chart === 'undefined') return;
     const ctx = document.getElementById('sp-mi-chart');
+    const empty = document.getElementById('sp-mi-empty');
+    const box = document.getElementById('spMIChartBox');
+    if(!ctx) return;
+    if(!d || !d.labels || d.labels.length === 0) {
+      if(empty) empty.style.display = 'block';
+      if(box) box.style.display = 'none';
+      return;
+    }
+    if(empty) empty.style.display = 'none';
+    if(box) box.style.display = 'block';
     if(miChart) miChart.destroy();
+    const colors = [
+      '#8b5cf6', // کلامی - زبانی
+      '#3b82f6', // منطقی - ریاضی
+      '#ec4899', // تصویری - فضایی
+      '#f97316', // جنبشی - حرکتی
+      '#eab308', // موسیقیایی
+      '#10b981', // بین‌فردی
+      '#06b6d4', // درون‌فردی
+      '#84cc16'  // طبیعت‌گرا
+    ];
     miChart = new Chart(ctx, {
       type:'bar',
-      data:{labels:d.labels, datasets:[{label:'امتیاز هوش', data:d.data, backgroundColor:'#4f46e5', borderRadius: 5}]},
+      data:{labels:d.labels, datasets:[{label:'امتیاز هوش', data:d.data, backgroundColor:colors, borderRadius: 6}]},
       options:{ indexAxis: 'y', maintainAspectRatio: false, responsive: true, plugins:{legend:{display:false}}, scales:{ x:{beginAtZero:true, grid:{display:false}}, y:{ticks:{autoSkip:false, font:{size:11}}} } }
     });
   }
 
   function renderMIAccordion(conf, name, traitStates){
+    const el = document.getElementById('sp-mi-accordion');
+    if(!el) return;
     let h="";
     conf.forEach(c=>{
       let traitHtml = "";
@@ -868,7 +923,7 @@
       });
       h += `<div class="card" style="padding:15px; margin-bottom:12px; border:1px solid var(--border);"><div style="font-weight:bold; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:1.1rem;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display=='block'?'none':'block'"><span>${c.type}</span> <i class="fas fa-chevron-down" style="font-size:0.9rem; opacity:0.5;"></i></div><div style="display:none; padding-top:15px;"><div style="background:#f1f5f9; padding:12px; border-radius:12px; font-size:0.85rem; color:#475569; margin-bottom:15px; line-height:1.6; border-right:4px solid var(--primary);">${c.desc}</div>${traitHtml}</div></div>`;
     });
-    document.getElementById('sp-mi-accordion').innerHTML = h;
+    el.innerHTML = h;
   }
 
   function logMI(n,t,b,s){ showLoading(); app.run.withSuccessHandler(()=>{ hideLoading(); showToast("بروزرسانی شد"); openProfile(n); }).submitMILog(n,t,b,s); }
@@ -883,22 +938,31 @@
   }
 
   function renderSummaryStats(s) {
+    const delaySessions = parseInt(s.l || 0, 10);
+    const delayMins = parseInt(s.lm || 0, 10);
+    const delaySessionText = delaySessions > 0 ? `${toPersianNum(delaySessions)} جلسه تاخیر` : 'بدون تاخیر';
+    const delayMinsText = delayMins > 0 ? `${toPersianNum(delayMins)} دقیقه تاخیر` : '۰ دقیقه تاخیر';
+
     const h = `
-      <div style="text-align:center; padding:10px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0;">
-        <small style="color:#15803d; display:block;">حضور به‌موقع</small>
-        <b style="font-size:1.2rem;">${toPersianNum(s.p)}</b>
+      <div class="sp-stat-pill p">
+        <small>حضور به‌موقع</small>
+        <b>${toPersianNum(s.p)} جلسه</b>
+        <div>انضباط کامل</div>
       </div>
-      <div style="text-align:center; padding:10px; background:#fffbeb; border-radius:12px; border:1px solid #fef3c7;">
-        <small style="color:#b45309; display:block;">حضور با تاخیر</small>
-        <b style="font-size:1.2rem;">${toPersianNum(s.l)} <small>(${toPersianNum(s.lm)} د)</small></b>
+      <div class="sp-stat-pill l">
+        <small>حضور با تاخیر</small>
+        <b>${delaySessionText}</b>
+        <div>${delayMinsText}</div>
       </div>
-      <div style="text-align:center; padding:10px; background:#fef2f2; border-radius:12px; border:1px solid #fecaca;">
-        <small style="color:#b91c1c; display:block;">غیبت</small>
-        <b style="font-size:1.2rem;">${toPersianNum(s.a)}</b>
+      <div class="sp-stat-pill a">
+        <small>غیبت غیرموجه</small>
+        <b>${toPersianNum(s.a)} جلسه</b>
+        <div>کسر امتیاز</div>
       </div>
-      <div style="text-align:center; padding:10px; background:#f0f9ff; border-radius:12px; border:1px solid #bae6fd;">
-        <small style="color:#0369a1; display:block;">غیبت موجه</small>
-        <b style="font-size:1.2rem;">${toPersianNum(s.e)}</b>
+      <div class="sp-stat-pill e">
+        <small>غیبت موجه</small>
+        <b>${toPersianNum(s.e)} جلسه</b>
+        <div>با هماهنگی</div>
       </div>
     `;
     document.getElementById('sp-summary-stats').innerHTML = h;
@@ -927,23 +991,96 @@
       if(!d.success) return showAlert("خطا در دریافت اطلاعات", 'error');
       const info = d.info; const stats = d.stats; const today = new Date().toLocaleDateString('fa-IR');
       const parentNote = String(info.parentNote || info.parent_note || '').trim() || 'توضیحات خاصی ثبت نشده است.';
-      document.getElementById('report-date').innerText = `تاریخ صدور: ${toPersianNum(today)}`;
-      let h = `<div class="report-compact-head"><img src="${info.displayImage || 'assets/default-avatar.svg'}" onerror="this.src='assets/default-avatar.svg'"><div><small>کارنامه عملکرد</small><h3>${info.name}</h3><span class="score-badge">امتیاز کل: ${toPersianNum(stats.scores.total)}</span></div></div><div class="report-section report-compact-stats"><h4>📊 وضعیت حضور و غیاب</h4><div class="report-stat-row"><span>✅ حضور به‌موقع</span><b>${toPersianNum(stats.stats.p)}</b></div><div class="report-stat-row"><span>⏰ تاخیر</span><b>${toPersianNum(stats.stats.l)} / ${toPersianNum(stats.stats.lm)}د</b></div><div class="report-stat-row"><span>❌ غیبت</span><b>${toPersianNum(stats.stats.a)}</b></div><div class="report-stat-row"><span>🏳️ موجه</span><b>${toPersianNum(stats.stats.e)}</b></div></div><div class="report-section report-compact-mi"><h4>🧠 پروفایل هوش برتر</h4>${generateSimpleBarChart(d.mi.chart)}</div><div class="report-section report-parent-note"><h4>📝 یادداشت مربی برای والدین</h4><div>${parentNote}</div></div>`;
+      document.getElementById('report-date').innerText = `تاریخ صدور رسمی: ${toPersianNum(today)}`;
+
+      const delayCount = parseInt((stats && stats.stats && stats.stats.l) || 0, 10);
+      const delayMins = parseInt((stats && stats.stats && stats.stats.lm) || 0, 10);
+      const delayText = delayCount > 0 ? `${toPersianNum(delayCount)} جلسه تاخیر (${toPersianNum(delayMins)} دقیقه تاخیر)` : 'بدون تاخیر (۰ دقیقه تاخیر)';
+      const totalSessions = ((stats?.stats?.p)||0) + delayCount + ((stats?.stats?.a)||0) + ((stats?.stats?.e)||0);
+
+      let h = `
+        <div class="report-compact-head">
+          <img src="${info.displayImage || 'assets/default-avatar.svg'}" onerror="this.src='assets/default-avatar.svg'" alt="${escapeHtml(info.name)}">
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+              <small style="color:var(--primary); font-weight:800; font-size:0.85rem;">سامانه هوشمند تربیتی چهارشنبه‌جلسه</small>
+              <span class="score-badge">امتیاز کل: ${toPersianNum(stats?.scores?.total || 0)}</span>
+            </div>
+            <h3 style="margin:4px 0 6px; font-size:1.25rem; font-weight:800; color:var(--text-main);">${escapeHtml(info.name)}</h3>
+            <div style="font-size:0.82rem; color:var(--text-muted, #475569);">
+              مجموع جلسات ارزیابی‌شده: <b>${toPersianNum(totalSessions)} جلسه</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-section report-compact-stats">
+          <h4>📊 وضعیت حضور، غیاب و انضباط</h4>
+          <div class="report-stat-row">
+            <span>✅ حضور به‌موقع</span>
+            <b>${toPersianNum(stats?.stats?.p || 0)} جلسه</b>
+          </div>
+          <div class="report-stat-row">
+            <span>⏰ حضور با تاخیر</span>
+            <b>${delayText}</b>
+          </div>
+          <div class="report-stat-row">
+            <span>❌ غیبت غیرموجه</span>
+            <b>${toPersianNum(stats?.stats?.a || 0)} جلسه</b>
+          </div>
+          <div class="report-stat-row">
+            <span>🏳️ غیبت موجه</span>
+            <b>${toPersianNum(stats?.stats?.e || 0)} جلسه</b>
+          </div>
+        </div>
+
+        <div class="report-section report-compact-mi">
+          <h4>🧠 پروفایل هوش‌های برتر و گرایش‌های تربیتی</h4>
+          ${generateSimpleBarChart(d.mi?.chart)}
+        </div>
+
+        <div class="report-section report-parent-note">
+          <h4>📝 یادداشت مربی و توصیه تربیتی به خانواده</h4>
+          <div>${escapeHtml(parentNote)}</div>
+        </div>
+
+        <div class="report-footer-print">
+          <div class="report-sign-col">
+            <span>مهر و امضای مربی / مسئول دوره:</span>
+            <div class="report-sign-line"></div>
+          </div>
+          <div class="report-sign-col" style="text-align:left;">
+            <span>تاریخ اعتبارسنجی:</span>
+            <b>${toPersianNum(today)}</b>
+          </div>
+        </div>
+      `;
       document.getElementById('report-content').innerHTML = h;
-      document.getElementById('report-modal').style.display = 'block';
+      document.getElementById('report-modal').style.display = 'flex';
     }).getFullStudentProfile(currentStudent);
   }
 
   function generateSimpleBarChart(chartData) {
-    if(!chartData || !chartData.labels) return "";
-    let html = '<div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">';
-    let dataMap = chartData.labels.map((l, i) => ({label: l, value: chartData.data[i]}));
+    if(!chartData || !chartData.labels || chartData.labels.length === 0) {
+      return '<div style="text-align:center; padding:12px; color:var(--text-muted, #64748b); font-size:0.84rem;">در حال تکمیل داده‌های هوش‌های چندگانه...</div>';
+    }
+    let html = '<div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">';
+    let dataMap = chartData.labels.map((l, i) => ({label: l, value: chartData.data[i] || 0}));
     dataMap.sort((a,b) => b.value - a.value);
+    const maxVal = Math.max(1, ...dataMap.map(x=>x.value));
     dataMap.forEach(item => {
-      let pct = Math.min(100, (item.value / 10) * 100);
-      html += `<div style="display:flex; align-items:center; font-size:0.85rem;"><span style="width:100px;">${item.label}</span><div style="flex:1; background:#eee; height:10px; border-radius:5px; overflow:hidden;"><div style="width:${pct}%; background:var(--primary); height:100%;"></div></div><span style="width:30px; text-align:left; margin-right:5px;">${toPersianNum(item.value)}</span></div>`;
+      let pct = Math.max(4, Math.min(100, (item.value / Math.max(maxVal, 5)) * 100));
+      html += `
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.84rem;">
+          <span style="width:115px; font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.label}</span>
+          <div style="flex:1; background:rgba(148,163,184,0.2); height:12px; border-radius:999px; overflow:hidden;">
+            <div style="width:${pct}%; background:linear-gradient(90deg, #4f46e5, #6366f1); height:100%; border-radius:999px;"></div>
+          </div>
+          <span style="width:40px; text-align:left; font-weight:800; color:var(--text-main);">${toPersianNum(item.value)}</span>
+        </div>
+      `;
     });
-    html += '</div>'; return html;
+    html += '</div>';
+    return html;
   }
 
   function openTimer() { document.getElementById('timer-modal').style.display='flex'; }
@@ -1133,8 +1270,8 @@
   function renderReportModal(d, title){
     const info=d.info, stats=d.stats; document.getElementById('report-date').innerText=title;
     const parentNote = String(info.parentNote || info.parent_note || '').trim() || 'توضیحات خاصی ثبت نشده است.';
-    let h=`<div class="report-compact-head"><img src="${info.displayImage || 'assets/default-avatar.svg'}" onerror="this.src='assets/default-avatar.svg'"><div><small>${title}</small><h3>${info.name}</h3><span class="score-badge">امتیاز کل: ${toPersianNum(stats.scores.total)}</span></div></div><div class="report-section report-compact-stats"><h4>📊 وضعیت حضور</h4><div class="report-stat-row"><span>حاضر</span><b>${toPersianNum(stats.stats.p)}</b></div><div class="report-stat-row"><span>تاخیر</span><b>${toPersianNum(stats.stats.l)}</b></div><div class="report-stat-row"><span>غیبت</span><b>${toPersianNum(stats.stats.a)}</b></div><div class="report-stat-row"><span>موجه</span><b>${toPersianNum(stats.stats.e)}</b></div></div><div class="report-section report-compact-mi"><h4>🧠 هوش‌ها</h4>${generateSimpleBarChart(d.mi.chart)}</div><div class="report-section report-parent-note"><h4>📝 یادداشت مربی برای والدین</h4><div>${parentNote}</div></div><div class="report-section report-events"><h4>⏳ رویدادهای این بازه</h4>${(d.fullHistory||[]).slice(0,6).map(x=>`<div style="border-bottom:1px solid #eee;padding:6px 0"><b>${toPersianNum(x.date)} - ${x.title}</b><br>${x.desc}</div>`).join('') || 'موردی ثبت نشده است.'}</div>`;
-    document.getElementById('report-content').innerHTML=h; document.getElementById('report-modal').style.display='block';
+    let h=`<div class="report-compact-head"><img src="${info.displayImage || 'assets/default-avatar.svg'}" onerror="this.src='assets/default-avatar.svg'"><div><small>${title}</small><h3>${info.name}</h3><span class="score-badge">امتیاز کل: ${toPersianNum(stats.scores.total)}</span></div></div><div class="report-section report-compact-stats"><h4>📊 وضعیت حضور</h4><div class="report-stat-row"><span>✅ حضور به‌موقع</span><b>${toPersianNum(stats.stats.p)} جلسه</b></div><div class="report-stat-row"><span>⏰ حضور با تاخیر</span><b>${toPersianNum(stats.stats.l)} جلسه (${toPersianNum(stats.stats.lm || 0)} دقیقه تاخیر)</b></div><div class="report-stat-row"><span>❌ غیبت غیرموجه</span><b>${toPersianNum(stats.stats.a)} جلسه</b></div><div class="report-stat-row"><span>🏳️ غیبت موجه</span><b>${toPersianNum(stats.stats.e)} جلسه</b></div></div><div class="report-section report-compact-mi"><h4>🧠 هوش‌ها</h4>${generateSimpleBarChart(d.mi.chart)}</div><div class="report-section report-parent-note"><h4>📝 یادداشت مربی برای والدین</h4><div>${parentNote}</div></div><div class="report-section report-events"><h4>⏳ رویدادهای این بازه</h4>${(d.fullHistory||[]).slice(0,6).map(x=>`<div style="border-bottom:1px solid #eee;padding:6px 0"><b>${toPersianNum(x.date)} - ${x.title}</b><br>${x.desc}</div>`).join('') || 'موردی ثبت نشده است.'}</div>`;
+    document.getElementById('report-content').innerHTML=h; document.getElementById('report-modal').style.display='flex';
   }
 
   function openCalendarEvent(type, id) {

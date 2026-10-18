@@ -20,34 +20,33 @@
 7. 🧘 **درون‌فردی (Intrapersonal):** خودآگاهی، مدیریت خشم و احساسات، استقلال رای.
 8. 🌿 **طبیعت‌گرا (Naturalistic):** انس با طبیعت و محیط‌زیست، شناخت جانداران و پدیده‌ها.
 
-### ساختار لاگ‌گذاری مشاهدات:
-- هر مشاهده شامل: دانش‌آموز، نوع هوش، رفتار ثبت‌شده، وزن امتیاز (+۱ یا -۱)، بستر مشاهده (`context` مثل کلاس، حیاط، اردو) و منبع مشاهده (`source` مثل مربی، همیار، ولی).
-- **نمایش نمودار:** نمودارها به صورت میله‌ای افقی (Horizontal Bar Chart) بهینه‌شده برای موبایل رسم می‌شوند تا والدین و مربیان با یک نگاه توزیع توانمندی‌های متربی را بسنجند.
+### ساختار لاگ‌گذاری مشاهدات سه‌منبعه (Triangulated Assessment):
+- هر ارزیابی در چارچوب یک **دوره ارزیابی (Period)** و تفکیک‌شده به ۳ منبع مستقل ثبت می‌شود:
+  1. **گزارش والدین:** بافت خانه، مقیاس ۰ تا ۴، به همراه گزینه حیاتی «فرصت مشاهده نداشته‌ام» (فاقد امتیاز).
+  2. **مشاهدات مربی:** بافت کلاس و تعاملات جمعی، شرح عینی رفتار، درجه استقلال و شرایط وقوع.
+  3. **فعالیت‌های عملی:** چالش‌های طراحی‌شده متناسب با سن با سنجه‌های شفاف ارزیابی (Rubrics).
+- **منع ترکیب عددی:** هیچ میانگین‌گیری وزنی ساختگی انجام نمی‌شود؛ خروجی مقایسه‌ای و کیفی است طبق [`MASTER_07_MULTIPLE_INTELLIGENCES_MULTI_SOURCE_ASSESSMENT.md`](file:///c:/xampp/htdocs/CharShanbeJalase/docs/ai/masters/MASTER_07_MULTIPLE_INTELLIGENCES_MULTI_SOURCE_ASSESSMENT.md).
 
 ---
 
-## ۲. دیاگرام جریان ارزیابی و ثبت هوش (Intelligence Observation Flow)
+## ۲. دیاگرام جریان ارزیابی سه‌منبعه هوش (Multi-Source Assessment Flow)
 
 ```mermaid
 flowchart TD
-    CoachObs["مربی: مشاهده رفتار متربی در حین فعالیت\n(file: parts/mi-new.js)"] --> SelectStudent["انتخاب دانش‌آموز و هوش هدف"]
+    ChildPeriod["انتخاب متربی و دوره ارزیابی\n(مثلاً علی کاظمی - پاییز ۱۴۰۴)"] --> SelectDomain["انتخاب یکی از حوزه‌های ۸گانه گاردنر"]
     
-    SelectStudent --> PickBehavior{"نوع رفتار مشاهده‌شده"}
-    PickBehavior -->|رفتار مثبت (+)| PositiveScore["امتیاز مثبت (+1 یا +2)"]
-    PickBehavior -->|رفتار نیازمند تقویت (-)| NegativeScore["امتیاز اصلاحی (-1)"]
+    SelectDomain --> SourceChoice{"انتخاب منبع اطلاعات"}
     
-    PositiveScore --> AttachMeta["انتخاب زمینه (کلاس/حیاط) و منبع مشاهده"]
-    NegativeScore --> AttachMeta
+    SourceChoice -->|منبع ۱: والدین| FormParent["پرسشنامه والدین\n(مقیاس 0-4 + بدون فرصت + مثال واقعی)"]
+    SourceChoice -->|منبع ۲: مربی| FormCoach["مشاهده کلاسی مربی\n(شرح عینی رفتار + سطح راهنمایی + شرایط)"]
+    SourceChoice -->|منبع ۳: فعالیت عملی| FormPractical["چالش عملی هدفمند\n(انتخاب از کاتالوگ فعالیت‌ها + سنجه عملکرد)"]
     
-    AttachMeta --> SubmitObservation["ارسال به submitMIObservation در API\n(file: api.php#L610)"]
+    FormParent --> PersistObs["ذخیره مستقل در جدول intelligence_observations\n(تفکیک دقیق source_id و period_id)"]
+    FormCoach --> PersistObs
+    FormPractical --> PersistObs
     
-    subgraph DataPersistence ["تثبیت در پایگاه داده نسخه ۸"]
-        SubmitObservation --> LogObservation["ثبت رخداد در جدول mi_observations_v2\n(file: api.php#L625)"]
-        LogObservation --> LegacySync["ثبت پشتیبان در mi_logs_legacy جهت حفظ سازگاری"]
-        LegacySync --> AggregateScores["محاسبه مجدد میانگین امتیاز در mi_domain_scores"]
-    end
-    
-    AggregateScores --> RefreshUI["به‌روزرسانی لحظه‌ای نمودار هوش در پروفایل دانش‌آموز\n(file: parts/chart.js)"]
+    PersistObs --> Engine["موتور تحلیل سه‌منبعه\n(بررسی کفایت شواهد + مقایسه تطبیقی خانه و کلاس)"]
+    Engine --> ProfileView["نمایش در تب هوش پروفایل متربی\n(خلاصه 3 منبع + شواهد عینی + بدون برچسب هوش قطعی)"]
 ```
 
 ---

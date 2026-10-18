@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-const SCHEMA_VERSION = '9';
+const SCHEMA_VERSION = '11';
 
 // شناسه رزرو‌شده برای تنظیمات سراسری (غیر وابسته به کاربر) مثل نسخه‌ی ساختار
 const GLOBAL_OWNER = 0;
@@ -90,6 +90,8 @@ function initSchema(PDO $pdo): void {
     ensureIndex($pdo, 'plan_files', 'idx_plan_files_plan_id_id', 'CREATE INDEX idx_plan_files_plan_id_id ON plan_files (plan_id, id)');
     seedDefaults($pdo);
     migrateMISystem($pdo);
+    migrateMISystemV10($pdo);
+    migrateMISystemV11($pdo);
     $ver = $pdo->prepare('INSERT INTO settings (`key`, `value`, description) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)');
     $ver->execute(['SCHEMA_VERSION', SCHEMA_VERSION, 'نسخه ساختار دیتابیس']);
 }
@@ -385,6 +387,347 @@ function migrateMISystem(PDO $pdo): void {
     }
     if ($legacyLogsPreserved !== $legacyLogsCount) {
         throw new Exception("MI Migration FAILED: mi_logs_legacy count mismatch");
+    }
+}
+
+/**
+ * مایگریشن سیستم هوش‌های چندگانه فاز ۱۳ (نسخه ۱۰)
+ * - ایجاد جدول دوره‌های ارزیابی (evaluation_periods)
+ * - ایجاد جدول چالش‌های عملی استاندارد پروژه اسپکتروم (practical_activities) با دیتای اولیه
+ * - الحاق فیلدهای چندمنبعه و بافت‌محور به intelligence_observations
+ * - افزودن منبع practical به observation_sources
+ * - کاملاً idempotent و data-preserving
+ */
+function migrateMISystemV10(PDO $pdo): void {
+    // ۱) جدول دوره‌های ارزیابی (Evaluation Periods)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS evaluation_periods (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        owner_id INT NOT NULL DEFAULT 0,
+        title VARCHAR(190) NOT NULL,
+        start_date VARCHAR(20) NULL,
+        end_date VARCHAR(20) NULL,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_period_owner (owner_id, is_active)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $periodCount = (int)$pdo->query('SELECT COUNT(*) FROM evaluation_periods')->fetchColumn();
+    if ($periodCount === 0) {
+        $pdo->exec("INSERT INTO evaluation_periods (owner_id, title, start_date, end_date, is_active) VALUES
+            (0, 'دوره ارزیابی جاری (۱۴۰۴-۱۴۰۵)', '1404/07/01', '1405/03/31', 1)");
+    }
+
+    // ۲) جدول فعالیت‌ها و چالش‌های عملی استاندارد (پروژه اسپکتروم هاروارد)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS practical_activities (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        domain_id INT UNSIGNED NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        instructions TEXT NOT NULL,
+        age_group VARCHAR(50) NULL,
+        tools_needed TEXT NULL,
+        time_needed VARCHAR(50) NULL,
+        rubric_criteria JSON NULL,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_act_domain (domain_id, is_active),
+        FOREIGN KEY (domain_id) REFERENCES intelligence_domains(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // ۳) اطمینان از وجود منبع practical در observation_sources
+    $st = $pdo->prepare("SELECT id FROM observation_sources WHERE slug=?");
+    $st->execute(['practical']);
+    if (!$st->fetch()) {
+        $pdo->exec("INSERT INTO observation_sources (slug, name_fa, description, display_order, is_active) VALUES
+            ('practical', 'فعالیت عملی (پروژه اسپکتروم)', 'چالش‌ها و بازی‌های مهارتی هدفمند و ساختاریافته', 3, 1)");
+    }
+
+    // ۴) غنی‌سازی جدول intelligence_observations با فیلدهای جدید
+    ensureColumn($pdo, 'intelligence_observations', 'period_id', 'INT NULL AFTER student_id');
+    ensureColumn($pdo, 'intelligence_observations', 'activity_id', 'INT NULL AFTER indicator_id');
+    ensureColumn($pdo, 'intelligence_observations', 'assistance_level', 'VARCHAR(50) NULL AFTER score');
+    ensureColumn($pdo, 'intelligence_observations', 'context_condition', 'VARCHAR(190) NULL AFTER context_id');
+    ensureColumn($pdo, 'intelligence_observations', 'respondent_relation', 'VARCHAR(100) NULL AFTER recorded_by');
+
+    // ۵) نرم‌کردن قید indicator_id و باز کردن فیلد برای ثبت چالش بدون نیاز به شاخص صلب
+    try {
+        $pdo->exec("ALTER TABLE intelligence_observations DROP FOREIGN KEY intelligence_observations_ibfk_2");
+    } catch (Throwable $e) {}
+    try {
+        $pdo->exec("ALTER TABLE intelligence_observations MODIFY COLUMN indicator_id INT UNSIGNED NULL");
+        $pdo->exec("ALTER TABLE intelligence_observations ADD CONSTRAINT fk_obs_indicator FOREIGN KEY (indicator_id) REFERENCES behavioral_indicators(id) ON DELETE SET NULL");
+    } catch (Throwable $e) {}
+
+    // ۶) حذف check constraint امتیاز تا ثبت کیفی مربی بدون نمره عددی صلب خطا ندهد
+    try {
+        $pdo->exec("ALTER TABLE intelligence_observations DROP CONSTRAINT chk_score_or_no_opportunity");
+    } catch (Throwable $e) {}
+
+    ensureIndex($pdo, 'intelligence_observations', 'idx_obs_period', 'CREATE INDEX idx_obs_period ON intelligence_observations (period_id)');
+    ensureIndex($pdo, 'intelligence_observations', 'idx_obs_activity', 'CREATE INDEX idx_obs_activity ON intelligence_observations (activity_id)');
+    ensureIndex($pdo, 'intelligence_observations', 'idx_obs_student_period', 'CREATE INDEX idx_obs_student_period ON intelligence_observations (student_id, period_id)');
+
+    // ۷) درج چالش‌های اولیه استاندارد پروژه اسپکتروم در صورت خالی بودن جدول
+    $actCount = (int)$pdo->query('SELECT COUNT(*) FROM practical_activities')->fetchColumn();
+    if ($actCount === 0) {
+        $dRows = $pdo->query('SELECT id, name_fa, slug FROM intelligence_domains')->fetchAll();
+        $findDomain = function(string $keyword) use ($dRows): ?int {
+            foreach ($dRows as $d) {
+                if (mb_strpos($d['name_fa'], $keyword) !== false || mb_strpos($d['slug'], $keyword) !== false) {
+                    return (int)$d['id'];
+                }
+            }
+            return null;
+        };
+
+        $activities = [
+            [
+                'kw' => 'کلامی',
+                'title' => 'چالش جعبه قصه (Project Spectrum Storyboard)',
+                'instructions' => 'سه کارت تصویری با موضوعات ظاهراً نامربوط در اختیار متربی قرار می‌گیرد. از او خواسته می‌شود یک داستان کوتاه با شروع، اوج و پایان منسجم با پیوند این ۳ کارت تعریف کند.',
+                'age_group' => '۷ تا ۱۲ سال',
+                'tools_needed' => 'سه کارت تصویری رنگی',
+                'time_needed' => '۱۰ دقیقه',
+                'rubric' => json_encode([
+                    'level_3' => 'روایت منسجم و پرجزئیات با اتصال خلاقانه ۳ کارت و تغییر مناسب تن صدا',
+                    'level_2' => 'روایت ساده و پیوند حداقلی بین کارت‌ها با نیاز به یک یادآوری کوتاه',
+                    'level_1' => 'نام بردن مجزا از کارت‌ها بدون ایجاد پیوند روایی پیوسته'
+                ], JSON_UNESCAPED_UNICODE)
+            ],
+            [
+                'kw' => 'منطقی',
+                'title' => 'چالش کشف و گسترش الگو (Pattern Quest)',
+                'instructions' => 'مربی توالی منظمی از مهره‌ها یا اشکال رنگی را می‌چیند. از متربی خواسته می‌شود قاعده پنهان را کشف کرده و تا ۳ گام بعدی آن را ادامه دهد.',
+                'age_group' => '۷ تا ۱۲ سال',
+                'tools_needed' => 'مهره‌ها یا کارت‌های هندسی رنگی',
+                'time_needed' => '۱۰ دقیقه',
+                'rubric' => json_encode([
+                    'level_3' => 'کشف سریع قاعده تناوب و تکمیل بی‌نقص الگو بدون خطا',
+                    'level_2' => 'کشف الگو پس از راهنمایی کوتاه یا آزمون و خطای خوداصلاح‌گر',
+                    'level_1' => 'عدم تشخیص توالی و چیدمان تصادفی مهره‌ها'
+                ], JSON_UNESCAPED_UNICODE)
+            ],
+            [
+                'kw' => 'فضایی',
+                'title' => 'چالش بازسازی سازه فضایی (Spatial Builder)',
+                'instructions' => 'متربی تصویر دوبعدی از یک سازه مکعبی با زاویه دید پرسپکتیو را می‌بیند و با استفاده از قطعات لگو یا مکعب‌های چوبی، ماکت سه‌بعدی متناظر را می‌سازد.',
+                'age_group' => '۷ تا ۱۲ سال',
+                'tools_needed' => '۸ تا ۱۲ مکعب چوبی یا لگو + کارت راهنما',
+                'time_needed' => '۱۵ دقیقه',
+                'rubric' => json_encode([
+                    'level_3' => 'تطابق کامل ساختار سه‌بعدی، تعداد طبقات و تقارن با تصویر راهنما',
+                    'level_2' => 'ساخت کلیات سازه با اختلاف جزئی در یک لایه یا زاویه',
+                    'level_1' => 'دشواری در درک عمق و عدم انطباق با شکل دوبعدی'
+                ], JSON_UNESCAPED_UNICODE)
+            ],
+            [
+                'kw' => 'جنبشی',
+                'title' => 'مسیر موانع و تعادل حرکتی (Spectrum Movement Challenge)',
+                'instructions' => 'اجرای زنجیره حرکتی شامل راه رفتن روی نوار تعادل، پرش جفت‌پا از ۳ مانع نرم کوتاه و انداختن توپ درون سبد از فاصله ۲ متری.',
+                'age_group' => '۷ تا ۱۲ سال',
+                'tools_needed' => 'نوار تعادل، ۳ مانع نرم، توپ تنیس و سبد',
+                'time_needed' => '۱۰ دقیقه',
+                'rubric' => json_encode([
+                    'level_3' => 'حفظ کامل تعادل، فرود نرم و هماهنگی بالا در پرتاب',
+                    'level_2' => 'اجرای مسیر با اندکی تزلزل یا نیاز به تکرار مجدد پرتاب',
+                    'level_1' => 'اشکال در هماهنگی دست و پا یا انصراف از برخی موانع'
+                ], JSON_UNESCAPED_UNICODE)
+            ],
+            [
+                'kw' => 'موسیق',
+                'title' => 'چالش بازتولید ریتم و ملودی (Rhythm Echo)',
+                'instructions' => 'مربی با دست زدن یا کوبه چوبی یک الگوی ۴ ضربی با کشش‌های متفاوت می‌نوازد. متربی باید بعد از شنیدن، ریتم را عینا بازتولید کند.',
+                'age_group' => '۷ تا ۱۲ سال',
+                'tools_needed' => 'چوبک ریتم یا کف زدن',
+                'time_needed' => '۸ دقیقه',
+                'rubric' => json_encode([
+                    'level_3' => 'بازتولید دقیق، بی‌درنگ و ریتمیک الگو با تمپوی یکدست',
+                    'level_2' => 'تکرار ریتم با یک اشتباه کوچک در ضرب‌های فرعی',
+                    'level_1' => 'کف زدن نامنظم بدون توجه به فواصل ضربه‌ها'
+                ], JSON_UNESCAPED_UNICODE)
+            ],
+            [
+                'kw' => 'بین',
+                'title' => 'چالش مأموریت تیمی دونفره (Cooperative Puzzle)',
+                'instructions' => 'دو متربی باید با هم یک پازل ۲۰ تکه را کامل کنند، به گونه‌ای که یکی فقط راهنمایی کلامی می‌دهد و دیگری قطعات را برمی‌دارد و می‌چیند.',
+                'age_group' => '۷ تا ۱۲ سال',
+                'tools_needed' => 'پازل ۲۰ تکه',
+                'time_needed' => '۱۵ دقیقه',
+                'rubric' => json_encode([
+                    'level_3' => 'گفتگوی محترمانه، راهنمایی شفاف، صبوری و تشویق هم‌تیمی',
+                    'level_2' => 'مشارکت موثر با اندکی تمایل به تک‌روی یا تذکر مربی',
+                    'level_1' => 'قطع همکاری، پرخاش کلامی یا اصرار بر دخالت مستقیم در کار دیگری'
+                ], JSON_UNESCAPED_UNICODE)
+            ],
+            [
+                'kw' => 'درون',
+                'title' => 'چالش کارآگاه احساسات و بازتاب درونی (Emotion Detective)',
+                'instructions' => 'ارائه یک موقعیت چالشی (مثلاً باخت در بازی) و پرسش: «اگر در این شرایط بودی چه حسی داشتی؟ دلیلش چیست و چطور حالت را بهتر می‌کردی؟»',
+                'age_group' => '۷ تا ۱۲ سال',
+                'tools_needed' => 'کارت سناریوی احساسی',
+                'time_needed' => '۱۰ دقیقه',
+                'rubric' => json_encode([
+                    'level_3' => 'نام‌گذاری دقیق هیجان، تبیین دلیل و ارائه راهکار واقع‌بینانه خودتنظیمی',
+                    'level_2' => 'تشخیص حس کلی (خوب/بد) با بیان دلیل مختصر',
+                    'level_1' => 'پاسخ نامشخص («نمی‌دانم») و ناتوانی در توصیف حس درونی'
+                ], JSON_UNESCAPED_UNICODE)
+            ],
+            [
+                'kw' => 'طبیعت',
+                'title' => 'چالش طبقه‌بندی هوشمند طبیعت (Nature Sorting)',
+                'instructions' => 'ارائه ۱۰ نمونه یا کارت طبیعی (برگ‌ها، دانه‌ها، سنگ‌ها) به متربی جهت دسته‌بندی بر مبنای یک ویژگی خودیافته و توضیح علت آن.',
+                'age_group' => '۷ تا ۱۲ سال',
+                'tools_needed' => '۱۰ نمونه یا کارت طبیعی',
+                'time_needed' => '۱۲ دقیقه',
+                'rubric' => json_encode([
+                    'level_3' => 'دسته‌بندی نظام‌مند بر اساس ویژگی‌های علمی ملموس و تبیین دقیق تفاوت‌ها',
+                    'level_2' => 'دسته‌بندی بر مبنای یک شاخص ساده ظاهری (مثل اندازه یا رنگ)',
+                    'level_1' => 'چیدمان تصادفی و ناتوانی در توضیح منطق گروه‌بندی'
+                ], JSON_UNESCAPED_UNICODE)
+            ]
+        ];
+
+        $insAct = $pdo->prepare("INSERT INTO practical_activities (domain_id, title, instructions, age_group, tools_needed, time_needed, rubric_criteria, is_active)
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, 1)");
+        foreach ($activities as $act) {
+            $did = $findDomain($act['kw']);
+            if (!$did && !empty($dRows)) $did = (int)$dRows[0]['id'];
+            if ($did) {
+                $insAct->execute([
+                    $did,
+                    $act['title'],
+                    $act['instructions'],
+                    $act['age_group'],
+                    $act['tools_needed'],
+                    $act['time_needed'],
+                    $act['rubric']
+                ]);
+            }
+        }
+    }
+}
+
+/**
+ * فاز ۱۴: بارگذاری ۶۴ سوال دقیق پرسشنامه والدین و جدول مصاحبه تکمیلی (صفحات ۱ تا ۹ PDF)
+ */
+function migrateMISystemV11(PDO $pdo): void {
+    // ۱) جدول پرسشنامه تکمیلی و سوالات باز والدین (صفحات ۸ و ۹ فرم چاپی)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS mi_parent_interviews (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        owner_id INT UNSIGNED NOT NULL,
+        student_id INT UNSIGNED NOT NULL,
+        period_id INT UNSIGNED NULL,
+        free_time TEXT NULL,
+        extracurricular TEXT NULL,
+        feels_capable TEXT NULL,
+        spontaneous_interest TEXT NULL,
+        top_talent_example TEXT NULL,
+        hidden_talent_school TEXT NULL,
+        three_words VARCHAR(255) NULL,
+        note_for_coach TEXT NULL,
+        additional_notes TEXT NULL,
+        respondent_name VARCHAR(150) NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_owner_student (owner_id, student_id),
+        KEY idx_period (period_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // ۲) به‌روزرسانی جدول behavioral_indicators با ۶۴ سوال استاندارد پرسشنامه والدین (۸ سوال برای هر هوش)
+    $pdo->exec("SET FOREIGN_KEY_CHECKS=0");
+    $pdo->exec("DELETE FROM behavioral_indicators");
+    $pdo->exec("ALTER TABLE behavioral_indicators AUTO_INCREMENT = 1");
+    $pdo->exec("SET FOREIGN_KEY_CHECKS=1");
+
+    $questions = [
+        // بخش اول: هوش کلامی ـ زبانی (Domain ID: 1)
+        [1, 1, 'وقتی اتفاقی برایش می‌افتد، می‌تواند آن را با ترتیب و جزئیات برای دیگران تعریف کند.'],
+        [1, 2, 'داستان یا خاطره‌ای را که شنیده، می‌تواند با زبان خودش برای دیگران بازگو کند.'],
+        [1, 3, 'برای توضیح منظور خود، معمولاً از مثال یا توضیح مناسب استفاده می‌کند.'],
+        [1, 4, 'درباره معنی بعضی کلمات یا تفاوت میان کلمات سؤال می‌پرسد.'],
+        [1, 5, 'شعر، داستان یا مطالب شنیداری را نسبتاً سریع به خاطر می‌سپارد.'],
+        [1, 6, 'می‌تواند قوانین یک بازی یا روش انجام یک کار را برای فرد دیگری توضیح دهد.'],
+        [1, 7, 'هنگام مخالفت با نظر دیگران، تلاش می‌کند منظور خود را با توضیح و دلیل بیان کند.'],
+        [1, 8, 'هنگام گفت‌وگو معمولاً می‌تواند منظور خود را روشن و قابل‌فهم بیان کند.'],
+
+        // بخش دوم: هوش منطقی ـ ریاضی (Domain ID: 2)
+        [2, 1, 'درباره علت اتفاق‌ها سؤال می‌پرسد و می‌خواهد بداند «چرا» چیزی اتفاق افتاده است.'],
+        [2, 2, 'از معما، مسئله فکری یا بازی‌هایی که نیاز به فکر کردن دارند لذت می‌برد.'],
+        [2, 3, 'می‌تواند وسایل را بر اساس ویژگی‌هایی مانند اندازه، شکل، رنگ یا کاربرد دسته‌بندی کند.'],
+        [2, 4, 'الگوها یا نظم‌هایی را که در عددها، شکل‌ها یا اتفاق‌ها وجود دارد، نسبتاً سریع پیدا می‌کند.'],
+        [2, 5, 'وقتی با مشکلی روبه‌رو می‌شود، برای حل آن فقط به یک راه فکر نمی‌کند و راه‌های دیگری نیز پیشنهاد می‌دهد.'],
+        [2, 6, 'قوانین بازی‌های فکری یا بازی‌های دارای قانون را نسبتاً سریع متوجه می‌شود.'],
+        [2, 7, 'قبل از انجام یک کار پیچیده، درباره ترتیب انجام مراحل آن فکر می‌کند.'],
+        [2, 8, 'اگر در یک مسئله یا استدلال اشتباهی وجود داشته باشد، تلاش می‌کند آن را پیدا کند.'],
+
+        // بخش سوم: هوش بین‌فردی ـ اجتماعی (Domain ID: 3)
+        [3, 1, 'بدون اینکه کسی مستقیم به او بگوید، معمولاً متوجه ناراحتی یا ناراحتیِ اعضای خانواده می‌شود.'],
+        [3, 2, 'در بازی یا فعالیت گروهی، معمولاً نوبت و حق دیگران را در نظر می‌گیرد.'],
+        [3, 3, 'می‌تواند با کودکان مختلف، حتی کودکانی که شباهت زیادی به خودش ندارند، ارتباط برقرار کند.'],
+        [3, 4, 'وقتی میان دو نفر اختلافی ایجاد می‌شود، می‌تواند درباره راه‌حل یا آشتی کردن صحبت کند.'],
+        [3, 5, 'در فعالیت گروهی می‌تواند مسئولیتی را که به او سپرده شده انجام دهد.'],
+        [3, 6, 'اگر کودکی تنها یا ناراحت باشد، گاهی تلاش می‌کند او را وارد بازی یا جمع کند.'],
+        [3, 7, 'می‌تواند نظر مخالف خود را بدون تحقیر یا مسخره کردن طرف مقابل بیان کند.'],
+        [3, 8, 'معمولاً می‌تواند تشخیص دهد چه زمانی باید صحبت کند و چه زمانی بهتر است گوش دهد.'],
+
+        // بخش چهارم: هوش درون‌فردی ـ خودشناختی (Domain ID: 4)
+        [4, 1, 'می‌تواند احساس خود را با کلمات بیان کند؛ مثلاً بگوید ناراحت، عصبانی، نگران یا خوشحال است.'],
+        [4, 2, 'می‌تواند تا حدی توضیح دهد که چرا ناراحت، عصبانی یا خوشحال شده است.'],
+        [4, 3, 'بعد از اینکه اشتباهی انجام می‌دهد، گاهی خودش درباره رفتار خود فکر می‌کند.'],
+        [4, 4, 'می‌تواند بعضی از نقاط قوت و ضعف خودش را بیان کند.'],
+        [4, 5, 'برای انجام بعضی کارهای شخصی خود بدون یادآوری مداوم دیگران برنامه‌ریزی می‌کند.'],
+        [4, 6, 'وقتی در کاری شکست می‌خورد، بعد از مدتی دوباره برای بهتر انجام دادن آن تلاش می‌کند.'],
+        [4, 7, 'می‌تواند درباره هدفی که می‌خواهد به آن برسد صحبت کند.'],
+        [4, 8, 'وقتی متوجه می‌شود رفتار یا تصمیمی از او نتیجه خوبی نداشته، می‌تواند درباره تغییر آن فکر کند.'],
+
+        // بخش پنجم: هوش تصویری ـ فضایی (Domain ID: 5)
+        [5, 1, 'از ساختن شکل‌ها و سازه‌ها با لگو یا وسایل مشابه لذت می‌برد.'],
+        [5, 2, 'در حل پازل‌های متناسب با سن خود، معمولاً توانایی خوبی نشان می‌دهد.'],
+        [5, 3, 'مسیرها و مکان‌هایی را که قبلاً دیده، نسبتاً خوب به خاطر می‌سپارد.'],
+        [5, 4, 'در نقاشی، ساختن یا کاردستی به جزئیات ظاهری توجه می‌کند.'],
+        [5, 5, 'می‌تواند چیزی را که دیده است، با نقاشی، ساختن یا چیدن دوباره بازسازی کند.'],
+        [5, 6, 'از باز کردن وسایل برای فهمیدن اینکه چگونه ساخته شده‌اند، لذت می‌برد.'],
+        [5, 7, 'تفاوت میان شکل‌ها، اندازه‌ها و جهت‌های مختلف را نسبتاً سریع تشخیص می‌دهد.'],
+        [5, 8, 'وقتی موضوعی با تصویر، نقشه یا نمودار نشان داده می‌شود، می‌تواند روابط میان اجزای آن را خوب درک کند.'],
+
+        // بخش ششم: هوش جنبشی ـ حرکتی (Domain ID: 6)
+        [6, 1, 'در فعالیت‌های ورزشی متناسب با سن خود، هماهنگی بدنی خوبی نشان می‌دهد.'],
+        [6, 2, 'حرکات جدید را پس از مشاهده دیگران، نسبتاً سریع یاد می‌گیرد.'],
+        [6, 3, 'در فعالیت‌هایی که نیاز به استفاده دقیق از دست‌ها دارند، عملکرد خوبی نشان می‌دهد.'],
+        [6, 4, 'از نمایش، نقش‌آفرینی یا اجرای حرکات مربوط به یک داستان لذت می‌برد.'],
+        [6, 5, 'وقتی خودش یک کار را انجام می‌دهد، معمولاً بهتر از زمانی که فقط درباره آن توضیح می‌شنود یاد می‌گیرد.'],
+        [6, 6, 'در بازی‌هایی که نیاز به تعادل، هماهنگی یا کنترل بدن دارند، عملکرد خوبی دارد.'],
+        [6, 7, 'از ساختن، تعمیر کردن یا کار با ابزار و وسایل دستی لذت می‌برد.'],
+        [6, 8, 'هنگام انجام فعالیت‌های حرکتی، می‌تواند حرکات بدن خود را نسبتاً دقیق کنترل کند.'],
+
+        // بخش هفتم: هوش طبیعت‌گرا (Domain ID: 7)
+        [7, 1, 'درباره حیوانات، گیاهان یا پدیده‌های طبیعی سؤال‌های زیادی می‌پرسد.'],
+        [7, 2, 'می‌تواند تفاوت میان بعضی حیوانات، گیاهان یا پدیده‌های طبیعی را تشخیص دهد.'],
+        [7, 3, 'از حضور در محیط‌هایی مانند پارک، باغ، کوه، جنگل یا طبیعت لذت می‌برد.'],
+        [7, 4, 'به نگهداری از گل، گیاه یا حیوان علاقه و توجه نشان می‌دهد.'],
+        [7, 5, 'مستندها، کتاب‌ها یا مطالب مربوط به حیوانات و طبیعت را با علاقه دنبال می‌کند.'],
+        [7, 6, 'نسبت به آسیب زدن به حیوانات، گیاهان یا محیط زیست حساس است.'],
+        [7, 7, 'در طبیعت به جزئیات کوچک مانند برگ‌ها، حشرات، سنگ‌ها یا تغییرات محیط توجه می‌کند.'],
+        [7, 8, 'از جمع‌آوری، مقایسه یا بررسی نمونه‌های طبیعی مانند سنگ، برگ یا صدف لذت می‌برد.'],
+
+        // بخش هشتم: هوش موسیقایی (Domain ID: 8)
+        [8, 1, 'ریتم یک آهنگ یا سرود را نسبتاً درست تشخیص می‌دهد و دنبال می‌کند.'],
+        [8, 2, 'ریتمی را که می‌شنود، می‌تواند با دست زدن یا ضرب گرفتن تا حد زیادی تکرار کند.'],
+        [8, 3, 'آهنگ‌ها یا سرودها را نسبتاً سریع به خاطر می‌سپارد.'],
+        [8, 4, 'تفاوت زیر و بم یا تغییر ارتفاع صدا را متوجه می‌شود.'],
+        [8, 5, 'هنگام شنیدن موسیقی یا سرود، معمولاً با ریتم آن همراه می‌شود.'],
+        [8, 6, 'گاهی خودش ریتم، آهنگ یا زمزمه‌ای ایجاد می‌کند.'],
+        [8, 7, 'تغییر لحن و حالت احساسی صدا، مانند عصبانیت، شادی یا ناراحتی را نسبتاً سریع متوجه می‌شود.'],
+        [8, 8, 'اگر در ریتم یا آهنگ یک سرود یا قطعه آشنا تغییری ایجاد شود، ممکن است متوجه آن شود.']
+    ];
+
+    $insInd = $pdo->prepare("INSERT INTO behavioral_indicators 
+        (id, domain_id, indicator_text, indicator_category, display_order, is_active)
+        VALUES (?, ?, ?, 'positive', ?, 1)");
+
+    $id = 1;
+    foreach ($questions as $q) {
+        $insInd->execute([$id, $q[0], $q[2], $q[1]]);
+        $id++;
     }
 }
 

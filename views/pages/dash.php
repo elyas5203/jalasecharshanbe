@@ -6,10 +6,22 @@
         <small>امروز</small>
         <h2 style="margin:6px 0 12px; font-size:1.5rem;">کنترل سریع جلسه</h2>
         <div class="quick-actions">
-          <button class="action-tile" onclick="nav('att')"><span>✅</span>حضور</button>
-          <button class="action-tile" onclick="openPlanModal()"><span>📚</span>طرح</button>
-          <button class="action-tile" onclick="nav('profiles')"><span>👥</span>متربی</button>
-          <button class="action-tile" onclick="nav('notes')"><span>✍</span>یادداشت</button>
+          <button type="button" class="action-tile" onclick="nav('att')">
+            <span class="tile-icon-badge bg-green">✅</span>
+            <span class="tile-text">ثبت حضور</span>
+          </button>
+          <button type="button" class="action-tile" onclick="openPlanModal()">
+            <span class="tile-icon-badge bg-purple">📚</span>
+            <span class="tile-text">طرح درس</span>
+          </button>
+          <button type="button" class="action-tile" onclick="nav('profiles')">
+            <span class="tile-icon-badge bg-blue">👥</span>
+            <span class="tile-text">متربیان</span>
+          </button>
+          <button type="button" class="action-tile" onclick="nav('notes')">
+            <span class="tile-icon-badge bg-amber">✍</span>
+            <span class="tile-text">یادداشت‌ها</span>
+          </button>
         </div>
       </div>
       <div>

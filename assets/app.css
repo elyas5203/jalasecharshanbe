@@ -65,41 +65,41 @@
   --info-glow: rgba(0, 122, 255, 0.3);
   --purple: #5856D6;
 
-  /* تم روشن: بوم مایع آئورا آیفون (Apple iOS Light Aurora Canvas) */
-  --bg-body: #ecf1f9;
+  /* تم روشن: بوم اختصاصی چینی-شیشه‌ای مدرن (Porcelain-Ice Slate Canvas) — بدون سفیدی کورکننده */
+  --bg-body: #ebf0f7;
   --bg-gradient: 
-    radial-gradient(circle at 12% 15%, rgba(99, 102, 241, 0.30) 0%, transparent 48%),
-    radial-gradient(circle at 88% 12%, rgba(217, 70, 239, 0.28) 0%, transparent 44%),
-    radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.24) 0%, transparent 52%),
-    radial-gradient(circle at 15% 85%, rgba(52, 199, 89, 0.24) 0%, transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(249, 115, 22, 0.24) 0%, transparent 45%),
-    #ecf1f9;
+    radial-gradient(circle at 10% 12%, rgba(99, 102, 241, 0.16) 0%, transparent 42%),
+    radial-gradient(circle at 88% 18%, rgba(14, 165, 233, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.12) 0%, transparent 48%),
+    radial-gradient(circle at 20% 75%, rgba(244, 63, 94, 0.09) 0%, transparent 38%),
+    linear-gradient(180deg, #eef3f9 0%, #e2e8f2 100%);
 
-  /* متریال شیشه مایع لایه‌ای (iOS Glass Layer) */
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-bg-hover: rgba(255, 255, 255, 0.78);
-  --glass-bg-subtle: rgba(255, 255, 255, 0.42);
-  --glass-border: rgba(255, 255, 255, 0.72);
-  --glass-border-subtle: rgba(255, 255, 255, 0.40);
+  /* متریال شیشه کریستال مایع آیفون (2026 Ultra Liquid Glass) */
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0.52) 100%);
+  --glass-bg-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(255, 255, 255, 0.65) 100%);
+  --glass-bg-subtle: linear-gradient(135deg, rgba(255, 255, 255, 0.60) 0%, rgba(241, 245, 249, 0.42) 100%);
+  --glass-border: rgba(255, 255, 255, 0.68);
+  --glass-border-subtle: rgba(255, 255, 255, 0.45);
 
-  /* بازتاب لبه‌های سه‌بعدی آیفون (Apple Specular Highlight Rim) */
+  /* سایه‌های ارگانیک لایه‌بندی‌شده و برجستگی نوری لبه شیشه (Specular Rim & Bevel) */
   --glass-shadow: 
-    0 14px 35px -6px rgba(30, 41, 59, 0.09),
-    0 4px 12px -2px rgba(30, 41, 59, 0.04),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.98),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03);
+    0 14px 34px -4px rgba(15, 23, 42, 0.08),
+    0 4px 12px -2px rgba(15, 23, 42, 0.04),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 2px 0 rgba(255, 255, 255, 0.25);
 
   --glass-shadow-lg: 
-    0 25px 55px -10px rgba(15, 23, 42, 0.15),
-    0 8px 22px -4px rgba(15, 23, 42, 0.07),
+    0 24px 50px -8px rgba(15, 23, 42, 0.12),
+    0 8px 18px -3px rgba(15, 23, 42, 0.05),
     inset 0 1px 2px 0 rgba(255, 255, 255, 1),
-    inset 0 -1px 1.5px 0 rgba(0, 0, 0, 0.04);
+    inset 0 -1px 2px 0 rgba(255, 255, 255, 0.35);
 
-  --glass-blur: blur(30px) saturate(215%) brightness(1.03);
+  /* بلور اپتیکال عمیق شیشه مایع */
+  --glass-blur: blur(24px) saturate(135%);
 
   --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-subtle: #94a3b8;
+  --text-muted: #475569;
+  --text-subtle: #64748b;
   --card-bg: var(--glass-bg);
   --border: var(--glass-border-subtle);
   --radius-sm: 14px;
@@ -109,39 +109,37 @@
 }
 
 body.dark-mode {
-  /* تم تاریک: ابسیدین مایع فضایی (Apple Cosmic Obsidian Canvas) */
-  --bg-body: #070913;
+  /* تم تاریک: بوم ابسیدین مایع فضایی (Deep Space Obsidian Liquid Glass) — بدون تابش و خستگی چشم */
+  --bg-body: #090d16;
   --bg-gradient: 
-    radial-gradient(circle at 12% 15%, rgba(99, 102, 241, 0.40) 0%, transparent 48%),
-    radial-gradient(circle at 88% 12%, rgba(168, 85, 247, 0.35) 0%, transparent 42%),
-    radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.30) 0%, transparent 52%),
-    radial-gradient(circle at 15% 85%, rgba(16, 185, 129, 0.26) 0%, transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.30) 0%, transparent 45%),
-    #070913;
+    radial-gradient(circle at 12% 15%, rgba(99, 102, 241, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 88% 20%, rgba(14, 165, 233, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.15) 0%, transparent 45%),
+    #090d16;
 
-  --glass-bg: rgba(22, 27, 46, 0.65);
-  --glass-bg-hover: rgba(30, 38, 64, 0.78);
-  --glass-bg-subtle: rgba(18, 23, 38, 0.50);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --glass-border-subtle: rgba(255, 255, 255, 0.09);
+  --glass-bg: linear-gradient(135deg, rgba(22, 30, 49, 0.78) 0%, rgba(15, 23, 42, 0.62) 100%);
+  --glass-bg-hover: linear-gradient(135deg, rgba(30, 41, 65, 0.88) 0%, rgba(20, 30, 52, 0.72) 100%);
+  --glass-bg-subtle: linear-gradient(135deg, rgba(22, 30, 49, 0.60) 0%, rgba(15, 23, 42, 0.45) 100%);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-subtle: rgba(255, 255, 255, 0.08);
 
   --glass-shadow: 
-    0 14px 38px -4px rgba(0, 0, 0, 0.55),
+    0 16px 36px -4px rgba(0, 0, 0, 0.55),
     0 4px 12px rgba(0, 0, 0, 0.35),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.30),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.45);
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.06);
 
   --glass-shadow-lg: 
-    0 28px 65px -8px rgba(0, 0, 0, 0.70),
-    0 10px 26px rgba(0, 0, 0, 0.45),
-    inset 0 1px 2px 0 rgba(255, 255, 255, 0.42),
-    inset 0 -1px 1.5px 0 rgba(0, 0, 0, 0.55);
+    0 26px 55px -6px rgba(0, 0, 0, 0.75),
+    0 8px 20px rgba(0, 0, 0, 0.45),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.08);
 
-  --glass-blur: blur(34px) saturate(225%) brightness(1.05);
+  --glass-blur: blur(24px) saturate(145%);
 
   --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
+  --text-muted: #cbd5e1;
+  --text-subtle: #94a3b8;
   --card-bg: var(--glass-bg);
   --border: var(--glass-border);
 }
@@ -170,47 +168,147 @@ body {
   background-color: var(--bg-body);
   background-attachment: fixed;
   color: var(--text-main);
-  padding-bottom: 110px;
+  padding-bottom: max(120px, calc(105px + env(safe-area-inset-bottom)));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: relative;
   min-height: 100vh;
 }
 
-/* گوی‌های نور ارگانیک شناور پس‌زمینه (Ambient Floating Aurora Orbs) */
-body::before, body::after {
-  content: '';
+/* -----------------------------------------------------------------------------
+   بستر نورپردازی ارگانیک آیفون (iOS Authentic Aurora Mesh)
+   ----------------------------------------------------------------------------- */
+.ios-ambient-mesh {
   position: fixed;
-  border-radius: 50%;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   z-index: 0;
-  filter: blur(85px);
-  opacity: 0.70;
+  overflow: hidden;
 }
-body::before {
+
+.ios-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Blob 1: هاله ایندیگو-بنفش آیفون */
+.ios-blob.blob-1 {
   top: -8vw;
-  right: -8vw;
-  width: 52vw;
-  height: 52vw;
-  min-width: 320px;
-  min-height: 320px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.48), rgba(217, 70, 239, 0.28), transparent 70%);
-  animation: floatOrb 20s ease-in-out infinite alternate;
-}
-body::after {
-  bottom: -8vw;
-  left: -8vw;
-  width: 56vw;
-  height: 56vw;
+  right: -6vw;
+  width: 55vw;
+  height: 55vw;
   min-width: 340px;
   min-height: 340px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.42), rgba(52, 199, 89, 0.26), transparent 70%);
-  animation: floatOrb 24s ease-in-out infinite alternate-reverse;
+  filter: blur(85px);
+  opacity: 0.24;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.65) 0%, rgba(129, 140, 248, 0.25) 50%, transparent 75%);
+  animation: floatAurora1 28s ease-in-out infinite alternate;
 }
-@keyframes floatOrb {
+
+/* Blob 2: هاله آبی آسمانی و فیروزه‌ای */
+.ios-blob.blob-2 {
+  bottom: -10vw;
+  left: -8vw;
+  width: 58vw;
+  height: 58vw;
+  min-width: 360px;
+  min-height: 360px;
+  filter: blur(95px);
+  opacity: 0.22;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.60) 0%, rgba(56, 189, 248, 0.20) 50%, transparent 75%);
+  animation: floatAurora2 32s ease-in-out infinite alternate-reverse;
+}
+
+/* Blob 3: هاله فوکسیا-ارغوانی میانی */
+.ios-blob.blob-3 {
+  top: 30%;
+  right: 12%;
+  width: 44vw;
+  height: 44vw;
+  min-width: 300px;
+  min-height: 300px;
+  filter: blur(90px);
+  opacity: 0.16;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.50) 0%, transparent 70%);
+  animation: floatAurora3 26s ease-in-out infinite alternate;
+}
+
+/* Blob 4: هاله کهربایی و هلویی آرامش‌بخش */
+.ios-blob.blob-4 {
+  top: 55%;
+  left: 15%;
+  width: 46vw;
+  height: 46vw;
+  min-width: 300px;
+  min-height: 300px;
+  filter: blur(100px);
+  opacity: 0.15;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.40) 0%, rgba(251, 146, 60, 0.18) 50%, transparent 70%);
+  animation: floatAurora4 34s ease-in-out infinite alternate-reverse;
+}
+
+/* Blob 5: هاله زمردی شفاف مرکزی */
+.ios-blob.blob-5 {
+  top: 18%;
+  left: 32%;
+  width: 38vw;
+  height: 38vw;
+  min-width: 260px;
+  min-height: 260px;
+  filter: blur(90px);
+  opacity: 0.14;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.40) 0%, transparent 70%);
+  animation: floatAurora1 30s ease-in-out infinite alternate;
+}
+
+@keyframes floatAurora1 {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(-30px, 25px) scale(1.05) rotate(8deg); }
+  100% { transform: translate(25px, -20px) scale(0.96) rotate(-6deg); }
+}
+
+@keyframes floatAurora2 {
   0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-35px, 25px) scale(1.06); }
-  100% { transform: translate(25px, -18px) scale(0.96); }
+  50% { transform: translate(25px, -25px) scale(1.04); }
+  100% { transform: translate(-20px, 20px) scale(0.97); }
+}
+
+@keyframes floatAurora3 {
+  0% { transform: translate(0, 0) scale(0.96); }
+  50% { transform: translate(-22px, -18px) scale(1.06); }
+  100% { transform: translate(18px, 22px) scale(1); }
+}
+
+@keyframes floatAurora4 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(18px, -22px) scale(1.05); }
+  100% { transform: translate(-22px, 16px) scale(0.95); }
+}
+
+/* تم تاریک: هاله نئونی عمیق شب */
+body.dark-mode .ios-blob.blob-1 {
+  opacity: 0.28;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.65) 0%, transparent 70%);
+}
+body.dark-mode .ios-blob.blob-2 {
+  opacity: 0.25;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.60) 0%, transparent 70%);
+}
+body.dark-mode .ios-blob.blob-3 {
+  opacity: 0.20;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.50) 0%, transparent 70%);
+}
+body.dark-mode .ios-blob.blob-4 {
+  opacity: 0.18;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.40) 0%, transparent 70%);
+}
+body.dark-mode .ios-blob.blob-5 {
+  opacity: 0.16;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.40) 0%, transparent 70%);
 }
 
 /* خط‌قرمز ایمنی تصاویر (Image Safety Invariants) */
@@ -280,12 +378,20 @@ h1, h2, h3, h4, h5, h6, b, strong {
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 18px;
+  padding: 22px;
+  margin-bottom: 20px;
   box-shadow: var(--glass-shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
+}
+
+.card:hover {
+  box-shadow: var(--glass-shadow-lg);
+  border-color: rgba(255, 255, 255, 0.85);
+}
+body.dark-mode .card:hover {
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .card::before {
@@ -295,7 +401,7 @@ h1, h2, h3, h4, h5, h6, b, strong {
   right: 0;
   left: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
   pointer-events: none;
 }
 
@@ -315,21 +421,51 @@ h1, h2, h3, h4, h5, h6, b, strong {
   position: sticky;
   top: 0;
   z-index: 800;
-  height: 64px;
+  height: calc(64px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--glass-border);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
-  padding: 0 20px;
+  box-shadow: 0 4px 24px -2px rgba(15, 23, 42, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+.glass-date-pill {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg-subtle);
+  color: var(--primary);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-logo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(168, 85, 247, 0.22));
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.25);
+  font-size: 1.15rem;
+}
+
 .menu-btn {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   border-radius: var(--radius-sm);
   background: var(--glass-bg-subtle);
   border: 1px solid var(--glass-border);
@@ -340,6 +476,7 @@ h1, h2, h3, h4, h5, h6, b, strong {
   cursor: pointer;
   color: var(--text-main);
   transition: all 0.2s ease;
+  box-shadow: var(--glass-shadow);
 }
 .menu-btn:active {
   transform: scale(0.92);
@@ -370,19 +507,22 @@ h1, h2, h3, h4, h5, h6, b, strong {
   top: 0;
   right: 0;
   width: 295px;
+  max-width: 82vw;
   height: 100%;
+  height: 100dvh;
   background: var(--glass-bg);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-left: 1px solid var(--glass-border);
   z-index: 2500;
   transform: translateX(100%);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: -15px 0 45px rgba(0, 0, 0, 0.15);
-  padding: 24px 18px;
+  padding: max(20px, calc(14px + env(safe-area-inset-top, 0px))) 18px max(24px, calc(16px + env(safe-area-inset-bottom, 0px)));
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .sidebar.open {
   transform: translateX(0);
@@ -433,11 +573,14 @@ h1, h2, h3, h4, h5, h6, b, strong {
    ۶. ویجت‌های داشبورد، هیرو و کارهای سریع (Hero & Quick Actions)
    ----------------------------------------------------------------------------- */
 .hero-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(240, 244, 255, 0.7) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(240, 246, 255, 0.60) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.10), inset 0 1px 2px rgba(255, 255, 255, 1);
 }
 body.dark-mode .hero-card {
-  background: linear-gradient(135deg, rgba(30, 41, 65, 0.85) 0%, rgba(20, 28, 48, 0.75) 100%);
+  background: linear-gradient(135deg, rgba(30, 41, 65, 0.82) 0%, rgba(18, 26, 44, 0.70) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.65), inset 0 1px 1.5px rgba(255, 255, 255, 0.22);
 }
 
 .hero-grid {
@@ -450,16 +593,16 @@ body.dark-mode .hero-card {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .action-tile {
-  background: var(--glass-bg);
+  background: var(--glass-bg-subtle);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 14px 6px;
+  border-radius: 20px;
+  padding: 16px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -467,37 +610,65 @@ body.dark-mode .hero-card {
   gap: 8px;
   cursor: pointer;
   color: var(--text-main);
-  font-size: 0.86rem;
-  font-weight: 700;
   box-shadow: var(--glass-shadow);
-  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-decoration: none;
 }
-.action-tile span {
-  font-size: 1.6rem;
-  line-height: 1;
-  transition: transform 0.2s ease;
+.tile-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.tile-icon-badge.bg-green {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.22), rgba(16, 185, 129, 0.12));
+  border: 1px solid rgba(52, 199, 89, 0.35);
+}
+.tile-icon-badge.bg-purple {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(99, 102, 241, 0.12));
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+.tile-icon-badge.bg-blue {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(59, 130, 246, 0.12));
+  border: 1px solid rgba(14, 165, 233, 0.35);
+}
+.tile-icon-badge.bg-amber {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(251, 146, 60, 0.12));
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.tile-text {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
 }
 .action-tile:hover {
-  transform: translateY(-3px);
-  border-color: var(--primary-light);
-  box-shadow: 0 12px 24px -6px var(--primary-glow);
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 28px -4px var(--primary-glow);
 }
-.action-tile:hover span {
-  transform: scale(1.15);
+.action-tile:hover .tile-icon-badge {
+  transform: scale(1.14);
 }
 .action-tile:active {
   transform: scale(0.95);
 }
 
 .hero-stat {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.12));
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.14), rgba(168, 85, 247, 0.14));
+  border: 1px solid rgba(99, 102, 241, 0.30);
   border-radius: var(--radius-md);
-  padding: 14px 16px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  box-shadow: var(--glass-shadow);
 }
 .hero-stat small {
   color: var(--primary);
@@ -519,19 +690,24 @@ body.dark-mode .hero-card {
   background: var(--glass-bg-subtle);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  padding: 10px 8px;
+  padding: 12px 10px;
   text-align: center;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s ease;
+}
+.metric-pill:hover {
+  transform: translateY(-2px);
 }
 .metric-pill small {
   color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.80rem;
+  font-weight: 700;
 }
 .metric-pill b {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: var(--primary);
 }
@@ -623,7 +799,7 @@ input, select, textarea {
   -webkit-backdrop-filter: blur(12px);
   color: var(--text-main);
   font-family: inherit;
-  font-size: 0.96rem;
+  font-size: 16px;
   box-sizing: border-box;
   margin-bottom: 12px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -652,6 +828,16 @@ textarea {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+.compact-row input {
+  margin: 0 !important;
+  flex: 1;
+  min-width: 0;
+}
+.compact-row .btn {
+  width: auto !important;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .att-row {
@@ -1142,23 +1328,23 @@ body.dark-mode .attendance-session-body {
    ----------------------------------------------------------------------------- */
 .bottom-nav {
   position: fixed;
-  bottom: 16px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 24px);
   max-width: 480px;
-  height: 66px;
+  height: 68px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: 36px;
+  border-radius: 40px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 1000;
   box-shadow: var(--glass-shadow-lg);
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .nav-item {
@@ -1167,40 +1353,43 @@ body.dark-mode .attendance-session-body {
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-  border-radius: 24px;
-  padding: 5px 8px;
+  transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 26px;
+  padding: 6px 10px;
   height: 52px;
   flex: 1;
-  margin: 0 2px;
+  margin: 0 3px;
   user-select: none;
+  position: relative;
 }
 .nav-item i {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   margin-bottom: 2px;
-  transition: transform 0.2s ease;
+  transition: transform 0.22s ease;
 }
 .nav-item:active {
   transform: scale(0.92);
 }
 .nav-item:hover {
   color: var(--primary);
+  background: rgba(99, 102, 241, 0.08);
 }
 .nav-item.active {
-  color: var(--ios-blue);
-  background: rgba(0, 122, 255, 0.12);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.40), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  font-weight: 800;
 }
 body.dark-mode .nav-item.active {
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.16);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.45), inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
 }
 .nav-item.active i {
-  transform: translateY(-1px) scale(1.12);
+  transform: translateY(-2px) scale(1.15);
 }
 
 /* -----------------------------------------------------------------------------
@@ -1222,8 +1411,8 @@ body.dark-mode .nav-item.active {
 
 .modal-box {
   background: var(--glass-bg);
-  backdrop-filter: blur(30px) saturate(200%);
-  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   width: 100%;
   max-width: 520px;
@@ -1238,7 +1427,8 @@ body.dark-mode .nav-item.active {
 
 .confirm-box {
   background: var(--glass-bg);
-  backdrop-filter: blur(30px) saturate(200%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   width: 90%;
   max-width: 380px;
@@ -1645,8 +1835,8 @@ body.mi-locked #class-mi-section > .mi-lock-overlay {
   border: 1px solid var(--glass-border);
   border-radius: 32px;
   background: var(--glass-bg);
-  backdrop-filter: blur(35px) saturate(210%);
-  -webkit-backdrop-filter: blur(35px) saturate(210%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-shadow-lg);
   transform: translateY(28px) scale(0.98);
   opacity: 0;
@@ -2153,5 +2343,628 @@ body.dark-mode .page-hero-lite {
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
+/* -----------------------------------------------------------------------------
+   ۱۹. کارت‌های آمار شیشه‌ای مایع (Liquid Glass Summary Stat Pills)
+   ----------------------------------------------------------------------------- */
+.sp-stat-pill {
+  text-align: center;
+  padding: 14px 10px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 88px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.75), 0 4px 14px rgba(0, 0, 0, 0.03);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.sp-stat-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.9), 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+.sp-stat-pill.p {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+.sp-stat-pill.p small { color: #047857; font-weight: 700; font-size: 0.82rem; margin-bottom: 4px; display: block; }
+.sp-stat-pill.p b { font-size: 1.15rem; color: #065f46; font-weight: 800; line-height: 1.3; display: block; }
+.sp-stat-pill.p div { font-size: 0.78rem; color: #047857; font-weight: 600; margin-top: 3px; }
+
+.sp-stat-pill.l {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+.sp-stat-pill.l small { color: #b45309; font-weight: 700; font-size: 0.82rem; margin-bottom: 4px; display: block; }
+.sp-stat-pill.l b { font-size: 1.05rem; color: #92400e; font-weight: 800; line-height: 1.3; display: block; }
+.sp-stat-pill.l div { font-size: 0.78rem; color: #b45309; font-weight: 600; margin-top: 3px; }
+
+.sp-stat-pill.a {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+}
+.sp-stat-pill.a small { color: #b91c1c; font-weight: 700; font-size: 0.82rem; margin-bottom: 4px; display: block; }
+.sp-stat-pill.a b { font-size: 1.15rem; color: #991b1b; font-weight: 800; line-height: 1.3; display: block; }
+.sp-stat-pill.a div { font-size: 0.78rem; color: #b91c1c; font-weight: 600; margin-top: 3px; }
+
+.sp-stat-pill.e {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.28);
+}
+.sp-stat-pill.e small { color: #0369a1; font-weight: 700; font-size: 0.82rem; margin-bottom: 4px; display: block; }
+.sp-stat-pill.e b { font-size: 1.15rem; color: #075985; font-weight: 800; line-height: 1.3; display: block; }
+.sp-stat-pill.e div { font-size: 0.78rem; color: #0369a1; font-weight: 600; margin-top: 3px; }
+
+body.dark-mode .sp-stat-pill.p {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.38);
+}
+body.dark-mode .sp-stat-pill.p small, body.dark-mode .sp-stat-pill.p div { color: #6ee7b7; }
+body.dark-mode .sp-stat-pill.p b { color: #a7f3d0; }
+
+body.dark-mode .sp-stat-pill.l {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.38);
+}
+body.dark-mode .sp-stat-pill.l small, body.dark-mode .sp-stat-pill.l div { color: #fcd34d; }
+body.dark-mode .sp-stat-pill.l b { color: #fef08a; }
+
+body.dark-mode .sp-stat-pill.a {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.38);
+}
+body.dark-mode .sp-stat-pill.a small, body.dark-mode .sp-stat-pill.a div { color: #fca5a5; }
+body.dark-mode .sp-stat-pill.a b { color: #fecaca; }
+
+body.dark-mode .sp-stat-pill.e {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: rgba(14, 165, 233, 0.38);
+}
+body.dark-mode .sp-stat-pill.e small, body.dark-mode .sp-stat-pill.e div { color: #7dd3fc; }
+body.dark-mode .sp-stat-pill.e b { color: #bae6fd; }
+
+/* -----------------------------------------------------------------------------
+   ۲۰. ماتریس ریسپانسیو و ارگونومی فوق‌العاده موبایل (Mobile-First Ergonomic Matrix)
+   ----------------------------------------------------------------------------- */
+@media (max-width: 680px) {
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .container {
+    padding: 12px 10px;
+    padding-bottom: max(115px, calc(95px + env(safe-area-inset-bottom, 0px)));
+  }
+
+  .header {
+    height: calc(56px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+  #page-title {
+    font-size: 1.05rem;
+  }
+  #header-date {
+    font-size: 0.74rem;
+    padding: 4px 8px;
+    max-width: 130px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card {
+    padding: 16px 14px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+
+  /* ردیف تک‌خطی شیک کنترل‌های سریع */
+  .quick-actions {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    margin-top: 8px;
+  }
+  .action-tile {
+    padding: 10px 2px;
+    min-height: 64px;
+    font-size: 0.76rem;
+    border-radius: 14px;
+    gap: 4px;
+  }
+  .action-tile span {
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .metric-strip {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+  .metric-pill {
+    padding: 8px 4px;
+    border-radius: 12px;
+  }
+  .metric-pill small {
+    font-size: 0.72rem;
+  }
+  .metric-pill b {
+    font-size: 1.05rem;
+  }
+
+  /* نوار شناور ارگونومیک لمسی آیفون */
+  .bottom-nav {
+    height: 62px;
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 20px);
+    max-width: 440px;
+    border-radius: 32px;
+    padding: 0 4px;
+  }
+  .nav-item {
+    height: 50px;
+    padding: 4px 2px;
+    border-radius: 22px;
+    margin: 0 1px;
+  }
+  .nav-item i {
+    font-size: 1.25rem;
+    line-height: 1;
+    margin-bottom: 1px;
+  }
+  .nav-item span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* کارت‌های حضور و غیاب */
+  .att-row {
+    padding: 12px 10px;
+    border-radius: 16px;
+    margin-bottom: 10px;
+  }
+  .att-row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: nowrap;
+    margin-bottom: 10px;
+  }
+  .att-row-head b {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .att-seg {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 4px !important;
+    padding: 3px !important;
+    border-radius: 12px;
+  }
+  .att-seg-btn {
+    min-height: 42px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 6px 2px;
+    border-radius: 9px;
+    white-space: nowrap;
+  }
+
+  /* پنجره‌های مودال به صورت شیت شیک پایینی */
+  .modal {
+    padding: 8px;
+    align-items: flex-end;
+  }
+  .modal-box {
+    padding: 20px 16px;
+    border-radius: 28px 28px 20px 20px;
+    max-width: 100%;
+    max-height: calc(100dvh - 30px);
+  }
+  .confirm-box {
+    width: 95%;
+    padding: 22px 18px;
+    border-radius: 24px;
+  }
+
+  /* کارت‌های آماری پروفایل متربی */
+  .sp-stat-pill {
+    padding: 11px 6px;
+    min-height: 76px;
+    border-radius: 14px;
+  }
+  .sp-stat-pill small {
+    font-size: 0.72rem;
+    margin-bottom: 2px;
+  }
+  .sp-stat-pill b {
+    font-size: 0.96rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sp-stat-pill div {
+    font-size: 0.70rem;
+    margin-top: 2px;
+  }
+
+  .tabs {
+    padding: 4px;
+    margin-bottom: 14px;
+  }
+  .tab {
+    padding: 8px 6px;
+    font-size: 0.84rem;
+  }
+  .profile-avatar {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 10px;
+  }
+
+  .report-compact-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  .header {
+    height: calc(52px + env(safe-area-inset-top, 0px));
+  }
+  #header-date {
+    display: none;
+  }
+  .action-tile {
+    min-height: 60px;
+    font-size: 0.72rem;
+  }
+  .action-tile span {
+    font-size: 1.25rem;
+  }
+  .att-seg-btn {
+    font-size: 0.78rem;
+    min-height: 40px;
+  }
+  .nav-item span {
+    font-size: 0.68rem;
+  }
+  .nav-item i {
+    font-size: 1.15rem;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   ۲۳. بهینه‌سازی دسکتاپ پروفایل متربی و کارت هیرو (Desktop Single Profile Enhancements)
+   ----------------------------------------------------------------------------- */
+#view-single-profile {
+  max-width: 940px;
+  margin: 0 auto;
+}
+.sp-desktop-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+.sp-back-btn {
+  width: auto !important;
+  padding: 10px 22px !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  border-radius: var(--radius-sm) !important;
+}
+.sp-profile-hero {
+  text-align: center;
+  padding: 26px 20px 22px;
+  margin-bottom: 18px;
+}
+.sp-hero-avatar-wrap {
+  margin: 0 auto 14px;
+  width: 124px;
+  height: 124px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sp-hero-avatar-wrap::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.45), rgba(14, 165, 233, 0.35));
+  filter: blur(8px);
+  z-index: 0;
+  opacity: 0.7;
+}
+.sp-hero-avatar-wrap .profile-avatar {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  display: block;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  position: relative;
+  z-index: 1;
+}
+.sp-hero-name {
+  margin: 6px 0 8px;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.sp-hero-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.sp-hero-actions .btn {
+  width: auto;
+  min-width: 160px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* دکمه ضربدر بستن در هدر کارنامه */
+.report-close-x {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+.report-close-x:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-50%) scale(1.08);
+}
+
+/* فوتر پرینت و تایید کارنامه */
+.report-footer-print {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--glass-border);
+}
+.report-sign-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.report-sign-line {
+  width: 140px;
+  height: 1px;
+  border-bottom: 1px dotted #94a3b8;
+  margin-top: 20px;
+}
+
+/* =============================================================================
+   ۲۴. استایل‌های استاندارد پرینت و خروجی تمیز PDF (Zero Black / Blank Invariant)
+   ============================================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* پنهان‌سازی عناصر غیرضروری، نوارهای ناوبری، بوم نوری و دکمه‌ها */
+  .header,
+  .bottom-nav,
+  .sidebar,
+  .sidebar-backdrop,
+  .ios-ambient-mesh,
+  .container,
+  .report-actions,
+  .report-close-x,
+  .tabs,
+  .view,
+  #toast,
+  #alert-box,
+  #confirm-modal,
+  #prompt-modal,
+  #lightbox-modal,
+  #loading,
+  .sp-desktop-bar,
+  .empty-state {
+    display: none !important;
+  }
+
+  /* نمایش اختصاصی مودال کارنامه به صورت سند پیوسته چاپی بدون موقعیت ثابت */
+  #report-modal {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 1 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .report-card-modal {
+    display: block !important;
+    position: static !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 12px !important;
+    overflow: visible !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .report-header {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    padding: 16px 20px !important;
+    border-radius: 12px 12px 0 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    text-align: center !important;
+  }
+
+  .report-header h2 {
+    color: #ffffff !important;
+    font-size: 1.3rem !important;
+  }
+
+  #report-date {
+    color: #e0e7ff !important;
+  }
+
+  .report-body {
+    padding: 16px 20px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  .report-compact-head {
+    display: flex !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 12px 14px !important;
+    margin-bottom: 12px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .report-compact-head img {
+    border: 2px solid #cbd5e1 !important;
+  }
+
+  .report-compact-head h3 {
+    color: #0f172a !important;
+  }
+
+  .score-badge {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    border: 1px solid #4338ca !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .report-section {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 12px 14px !important;
+    margin-bottom: 12px !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .report-section h4 {
+    color: #1e293b !important;
+    font-size: 0.95rem !important;
+    margin: 0 0 10px 0 !important;
+  }
+
+  .report-compact-stats {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .report-stat-row {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+    text-align: center !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .report-stat-row span {
+    font-size: 0.76rem !important;
+    color: #64748b !important;
+  }
+
+  .report-stat-row b {
+    font-size: 0.88rem !important;
+    color: #0f172a !important;
+  }
+
+  .report-parent-note div {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    min-height: 48px !important;
+    max-height: none !important;
+    padding: 10px 12px !important;
+  }
+
+  .report-footer-print {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    margin-top: 18px !important;
+    padding-top: 14px !important;
+    border-top: 1px dashed #94a3b8 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .report-sign-col {
+    color: #475569 !important;
+    font-size: 0.82rem !important;
+  }
+}
+
 
 
