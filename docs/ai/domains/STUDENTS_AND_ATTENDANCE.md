@@ -15,8 +15,14 @@
 2. **وضعیت‌های چهارگانه حضور و غیاب:**
    - **حاضر (Present):** ۱+ امتیاز به امتیاز سیستمی اضافه می‌شود.
    - **غیبت (Absent):** ۱- امتیاز و ۱ واحد به شمارنده غیبت‌ها اضافه می‌شود.
-   - **تاخیر (Late):** محاسبه دقیق دقایق تاخیر (`late_minutes`) و ثبت در شمارنده تاخیرها.
-   - **موجه (Excused):** بدون کسر امتیاز یا با نیم امتیاز مثبت طبق فرمول سیستم.
+   - **تاخیر (Late):** محاسبه دقیق دقایق تاخیر (`late_minutes`) و ثبت در شمارنده تاخیرها. امتیاز حضور بر اساس مدل پلکانی محاسبه می‌شود:
+     - ۱ تا ۵ دقیقه: `+0.95`
+     - ۶ تا ۱۰ دقیقه: `+0.85`
+     - ۱۱ تا ۱۵ دقیقه: `+0.70`
+     - ۱۶ تا ۲۰ دقیقه: `+0.55`
+     - ۲۱ تا ۳۰ دقیقه: `+0.40`
+     - بیش از ۳۰ دقیقه: `+0.25`
+   - **موجه (Excused):** نیم امتیاز مثبت (`+0.50`) به عنوان فعالیت موجه.
 3. **امتیاز نهایی:** مجموع ریاضی `امتیاز سیستمی حضور (system_score)` + `امتیاز دستی تشویقی/انضباطی (manual_score)`.
 4. **شاخص آتشین (On-Fire Streak):** اگر متربی در تمام جلسات گذشته هیچ غیبت و تاخیری نداشته باشد، نشانگر ویژه آتش 🔥 برای او فعال می‌شود.
 
@@ -26,23 +32,35 @@
 
 ```mermaid
 flowchart TD
-    SubmitEvent["ارسال داده حضور و غیاب جلسه\n(file: api.php#L245)"] --> LockSession["ایجاد یا یافتن جلسه در جدول attendance_sessions\n(file: api.php#L250-L265)"]
+    SubmitEvent["ارسال داده حضور و غیاب جلسه\n(file: api.php#L349)"] --> LockSession["ایجاد یا یافتن جلسه در جدول attendance_sessions\n(file: api.php#L354-L358)"]
     
     LockSession --> LoopStudents["پیمایش تک‌تک متربیان حاضر در لیست"]
     
-    subgraph CalculationCore ["موتور محاسبه اتمیک در bootstrap.php#L450-L510"]
+    subgraph CalculationCore ["موتور محاسبه اتمیک در bootstrap.php#updateCalculations"]
         LoopStudents --> CheckStatus{"بررسی وضعیت ثبت‌شده"}
-        CheckStatus -->|حاضر (Present)| AddPresent["absences = 0\nlate = 0\nsystem_score += 1.0"]
-        CheckStatus -->|غیبت (Absent)| AddAbsent["absences += 1\nsystem_score -= 1.0"]
-        CheckStatus -->|تاخیر (Late)| AddLate["late_count += 1\nlate_minutes += دقایق ورودی"]
-        CheckStatus -->|موجه (Excused)| AddExcused["بدون جریمه\nsystem_score += 0.5"]
+        CheckStatus -->|حاضر (Present)| AddPresent["absences += 0\nsystem_score += 1.00"]
+        CheckStatus -->|غیبت (Absent)| AddAbsent["absences += 1\nsystem_score -= 1.00"]
+        CheckStatus -->|موجه (Excused)| AddExcused["absences += 0\nsystem_score += 0.50"]
+        CheckStatus -->|تاخیر (Late)| CheckMins{"بررسی late_minutes"}
+        
+        CheckMins -->|تاخیر 0-5 دقیقه| M1["system_score += 0.95"]
+        CheckMins -->|تاخیر 6-10 دقیقه| M2["system_score += 0.85"]
+        CheckMins -->|تاخیر 11-15 دقیقه| M3["system_score += 0.70"]
+        CheckMins -->|تاخیر 16-20 دقیقه| M4["system_score += 0.55"]
+        CheckMins -->|تاخیر 21-30 دقیقه| M5["system_score += 0.40"]
+        CheckMins -->|تاخیر بیش از 30 دقیقه| M6["system_score += 0.25"]
         
         AddPresent --> SumScore["محاسبه امتیاز کل:\ntotal_score = system_score + manual_score"]
         AddAbsent --> SumScore
-        AddLate --> SumScore
         AddExcused --> SumScore
+        M1 --> SumScore
+        M2 --> SumScore
+        M3 --> SumScore
+        M4 --> SumScore
+        M5 --> SumScore
+        M6 --> SumScore
         
-        SumScore --> UpdateStudentRow["به‌روزرسانی سطر دانش‌آموز در جدول students\n(file: bootstrap.php#L490)"]
+        SumScore --> UpdateStudentRow["به‌روزرسانی سطر دانش‌آموز در جدول students\n(file: bootstrap.php)"]
     end
     
     UpdateStudentRow --> CheckStreak{"آیا absences == 0 و late == 0؟"}

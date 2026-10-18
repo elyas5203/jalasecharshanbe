@@ -35,15 +35,18 @@
 | `db()` | `bootstrap.php` | [`#L9-L39`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L9-L39) | ایجاد و بازگرداندن شیء اتصال امن PDO |
 | `initSchema()` | `bootstrap.php` | [`#L57-L95`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L57-L95) | مقداردهی اولیه پایگاه‌داده و جداول |
 | `migrateMISystem()` | `bootstrap.php` | [`#L120-L245`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L120-L245) | مایگریشن سیستم هوش چندگانه به نسخه ۸ |
-| `recalculateStudentAttendanceAndScore()` | `bootstrap.php` | [`#L450-L510`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L450-L510) | محاسبه ریاضی دقیق حضور، غیبت و امتیازات |
-| `telegramApi()` | `bootstrap.php` | [`#L520-L565`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L520-L565) | کلاینت ارتباط با متدهای مختلف ربات تلگرام |
+| `lateScore()` | `bootstrap.php` | [`#L422-L429`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L422-L429) | محاسبه پلکانی امتیاز تاخیر بر اساس دقایق |
+| `updateCalculations()` | `bootstrap.php` | [`#L430-L460`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L430-L460) | محاسبه ریاضی دقیق حضور، غیبت، تاخیر پلکانی و امتیازات |
+| `telegramApi()` | `bootstrap.php` | [`#L465-L510`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L465-L510) | کلاینت ارتباط با متدهای مختلف ربات تلگرام |
 | `authBootSession()` | `auth.php` | [`#L15-L44`](file:///c:/xampp/htdocs/CharShanbeJalase/auth.php#L15-L44) | راه‌اندازی سشن امن و چرخش ۳۰ دقیقه‌ای شناسه |
 | `csrfToken()` / `csrfCheck()` | `auth.php` | [`#L49-L65`](file:///c:/xampp/htdocs/CharShanbeJalase/auth.php#L49-L65) | تولید و اعتبارسنجی توکن‌های امنیتی CSRF |
-| `getAppData()` | `api.php` | [`#L130-L165`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L130-L165) | تجمیع تمام اطلاعات مورد نیاز صفحه اول داشبورد |
-| `submitAttendance()` | `api.php` | [`#L245-L280`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L245-L280) | ذخیره اتمیک حضور و غیاب جلسه با دقایق تاخیر |
-| `savePlan()` | `api.php` | [`#L350-L405`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L350-L405) | درج/به‌روزرسانی طرح درس و همگام‌سازی ملزومات |
-| `submitMIObservation()` | `api.php` | [`#L605-L660`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L605-L660) | ثبت رخداد هوش در جداول نسخه جدید و لگسی |
-| `uploadStudentImage()` | `api.php` | [`#L955-L978`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L955-L978) | دریافت و ذخیره عکس محلی متربی در دیسک |
+| `getAppData()` | `api.php` | [`#L114-L125`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L114-L125) | تجمیع تمام اطلاعات مورد نیاز صفحه اول داشبورد |
+| `getTrendData()` | `api.php` | [`#L175-L231`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L175-L231) | روند جلسات و محاسبه درصدهای وزنی تاخیر پلکانی |
+| `submitAttendance()` | `api.php` | [`#L349-L373`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L349-L373) | ذخیره اتمیک حضور و غیاب جلسه با دقایق تاخیر |
+| `getStudentDetails()` | `api.php` | [`#L593-L615`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L593-L615) | واکشی مشخصات، آمار تفکیکی و امتیاز سیستمی و رشد |
+| `savePlan()` | `api.php` | [`#L510-L560`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L510-L560) | درج/به‌روزرسانی طرح درس و همگام‌سازی ملزومات |
+| `submitMIObservation()` | `api.php` | [`#L890-L945`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L890-L945) | ثبت رخداد هوش در جداول نسخه جدید و لگسی |
+| `uploadStudentImage()` | `api.php` | [`#L980-L1010`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L980-L1010) | دریافت و ذخیره عکس محلی متربی در دیسک |
 
 ---
 

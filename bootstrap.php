@@ -419,6 +419,14 @@ function fixUrl($u): string {
     if (preg_match('~^https?://~i', $u)) return DEFAULT_IMG;
     return $u;
 }
+function lateScore(int $minutes): float {
+    if ($minutes <= 5) return 0.95;
+    if ($minutes <= 10) return 0.85;
+    if ($minutes <= 15) return 0.70;
+    if ($minutes <= 20) return 0.55;
+    if ($minutes <= 30) return 0.40;
+    return 0.25;
+}
 function updateCalculations(PDO $pdo): void {
     $pdo->exec("UPDATE students s
         LEFT JOIN (
@@ -426,7 +434,21 @@ function updateCalculations(PDO $pdo): void {
                    SUM(CASE WHEN status='Absent' THEN 1 ELSE 0 END) absences,
                    SUM(CASE WHEN status='Late' THEN 1 ELSE 0 END) late_count,
                    SUM(CASE WHEN status='Late' THEN late_minutes ELSE 0 END) late_minutes,
-                   SUM(CASE WHEN status='Absent' THEN -1 WHEN status='Late' THEN 1 WHEN status='Present' THEN 1 WHEN status='Excused' THEN 0.5 ELSE 0 END) activity_score
+                   SUM(CASE
+                       WHEN status='Absent' THEN -1
+                       WHEN status='Present' THEN 1
+                       WHEN status='Excused' THEN 0.5
+                       WHEN status='Late' THEN
+                           CASE
+                               WHEN late_minutes <= 5 THEN 0.95
+                               WHEN late_minutes <= 10 THEN 0.85
+                               WHEN late_minutes <= 15 THEN 0.70
+                               WHEN late_minutes <= 20 THEN 0.55
+                               WHEN late_minutes <= 30 THEN 0.40
+                               ELSE 0.25
+                           END
+                       ELSE 0
+                   END) activity_score
             FROM attendance_records
             GROUP BY student_id
         ) a ON a.student_id=s.id

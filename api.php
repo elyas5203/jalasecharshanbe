@@ -596,16 +596,23 @@ function getStudentDetails(PDO $pdo, string $name): array {
     $rows = $pdo->prepare('SELECT s.session_date, r.* FROM attendance_records r JOIN attendance_sessions s ON s.id=r.session_id WHERE r.student_id=? ORDER BY s.session_date ASC');
     $rows->execute([$srow['id']]);
     $histAsc = $rows->fetchAll();
-    $stats = ['p'=>0,'a'=>0,'l'=>0,'e'=>0,'lm'=>0]; $gl=[]; $gd=[]; $sys=0;
+    $stats = ['p'=>0,'a'=>0,'l'=>0,'e'=>0,'lm'=>0]; $gl=[]; $gd=[]; $sys=0.0;
     foreach ($histAsc as $r) {
-        if ($r['status'] === 'Present') { $sys++; $stats['p']++; }
-        elseif ($r['status'] === 'Absent') { $sys--; $stats['a']++; }
-        elseif ($r['status'] === 'Late') { $sys++; $stats['l']++; $stats['lm'] += (int)$r['late_minutes']; }
-        elseif ($r['status'] === 'Excused') { $stats['e']++; }
-        $gl[] = normalizeDateStr($r['session_date']); $gd[] = $sys + (float)$srow['manual_score'];
+        if ($r['status'] === 'Present') { $sys += 1.0; $stats['p']++; }
+        elseif ($r['status'] === 'Absent') { $sys -= 1.0; $stats['a']++; }
+        elseif ($r['status'] === 'Late') {
+            $mins = (int)($r['late_minutes'] ?? 0);
+            $sys += lateScore($mins);
+            $stats['l']++;
+            $stats['lm'] += $mins;
+        }
+        elseif ($r['status'] === 'Excused') { $sys += 0.5; $stats['e']++; }
+        $gl[] = normalizeDateStr($r['session_date']); $gd[] = round($sys + (float)$srow['manual_score'], 2);
     }
     $history = array_reverse(array_map(fn($r) => ['date'=>normalizeDateStr($r['session_date']), 'status'=>$r['status_text']], $histAsc));
-    return ['history'=>$history, 'stats'=>$stats, 'scores'=>['system'=>$sys, 'manual'=>(float)$srow['manual_score'], 'total'=>$sys + (float)$srow['manual_score']], 'growth'=>['labels'=>$gl, 'data'=>$gd]];
+    $roundedSys = round($sys, 2);
+    $manualScore = (float)$srow['manual_score'];
+    return ['history'=>$history, 'stats'=>$stats, 'scores'=>['system'=>$roundedSys, 'manual'=>$manualScore, 'total'=>round($roundedSys + $manualScore, 2)], 'growth'=>['labels'=>$gl, 'data'=>$gd]];
 }
 
 function miConfig(PDO $pdo): array {
