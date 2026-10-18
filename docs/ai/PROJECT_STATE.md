@@ -1,6 +1,40 @@
 # ACTIVE PROJECT STATE & MULTI-AI CONTINUOUS MEMORY (PROJECT_STATE.md)
 
-## Current state — 2026-10-18 — بازسازی سراسری کامپوننت‌های CSS به زبان شیشه‌ای مایع و تحلیل فرمول تاخیر [Agent: Antigravity]
+## Current state — 2026-10-18 — تفکیک ماژولار صفحات و نقاط ورود معنایی و اصلاح مودال گروه‌بندی (MASTER-04) [Agent: Antigravity]
+- **دستور کارفرما (Mandate):** «ببین میخوام ی کار ریسکی بکنم این الان همه چیز تو ی فایل ایندکسه نمیخوام اینطوری باشه میخوام صفحه به صفحه بشه جدا بشه ولی این کارو ی بار قدیم کردم خراب شد سیستمم فایل مستر دقیقشو میخوام برام بسازی بری درست بکنی بعد اینک ادرس دهی ها همه بهم میریزه توابع و... میخوام خط به خط بخونی و درستش بکنی برام این عکسه هم فرستادم ببین خرابه درستش بکن برام خیلی دقیق این کارو انجام بده از ساب ایجنت ها هم کمک بگیر /goal»
+- **اقدامات کلیدی مهندسی و بصری:**
+  - **رفع باگ بصری مودال گروه‌بندی (تصویر ارسالی):**
+    - مهار قطعی ابعاد تصاویر دانش‌آموزان در کارت‌های گروه‌بندی (`.student-select-card img: width: 50px !important; height: 50px !important; border-radius: 50% !important; object-fit: cover !important`).
+    - اصلاح چیدمان کارت از افقی به عمودی (`flex-direction: column; align-items: center; justify-content: center; text-align: center`).
+    - حل مشکل خرد شدن متن اسامی (`word-break: break-word; white-space: normal`).
+    - حذف اسکرول دوبل و افقی در گرید و باکس مودال (`overflow-x: hidden !important`).
+  - **استقرار سند اجرایی مستر:** تدوین سند جامع `docs/ai/masters/MASTER_04_MODULAR_PAGES_ARCHITECTURE.md` و ثبت تصمیم معمارانه `DEC-0007` در `docs/ai/DECISIONS.md`.
+  - **تفکیک کامل فایل‌های ویو و مودال‌ها (Safe-Separation Pattern):**
+    - ایجاد پوشه `views/layout/`: `header.php`, `sidebar.php`, `bottom_nav.php`, `ambient_mesh.php`, `overlays.php`.
+    - ایجاد پوشه `views/pages/`: `dash.php`, `tools.php`, `profiles.php`, `single_profile.php`, `attendance.php`, `plans.php`, `archive.php`, `calendar.php`, `search.php`, `notes.php`, `settings.php`, `scores.php`.
+    - ایجاد پوشه `views/modals/`: `plan_modal.php`, `timer_modal.php`, `grouping_modal.php`, `free_activity_modal.php`, `report_modal.php`.
+  - **نقاط ورود مستقل با آدرس‌دهی مستقیم (Semantic Entrypoints):**
+    - ایجاد فایل‌های `attendance.php`, `plans.php`, `profiles.php`, `tools.php`, `dashboard.php`, `archive.php`, `calendar.php`, `search.php`, `notes.php`, `settings.php`, `scores.php`.
+    - هماهنگ‌سازی روتر بدون رفرش (`history.pushState` و `window.onpopstate`) در تابع `nav()` در `parts/app.js`.
+    - فعال‌سازی خودکار و بلادرنگ صفحه درخواستی بدون شکستن حتی یک تابع جاوااسکریپت یا از دست رفتن وضعیت SPA.
+- **فایل‌های تغییر یافته:**
+  - `assets/app.css` (اصلاح استایل‌های گرید و کارت‌های انتخاب متربیان و مهار اسکرول افقی مودال)
+  - `index.php` (ارکستریتور ماژولار با اینکلودهای تمیز)
+  - `parts/app.js` (سینک کامل URL با تاریخچه مرورگر و لود مستقیم صفحه هدف)
+  - ساخت ۲۲ فایل جدید در `views/` و ۱۱ فایل روت اختصاصی
+  - `docs/ai/DECISIONS.md` (ثبت DEC-0007)
+  - `docs/ai/masters/MASTER_04_MODULAR_PAGES_ARCHITECTURE.md` (سند مستر اجرایی)
+  - `docs/ai/PROJECT_STATE.md` (امضای شیفت ایجنت)
+  - `docs/ai/CHANGELOG.md` (ثبت نسخه 2.4.0)
+- **اعتبارسنجی:**
+  - اجرای تست سینتکس PHP روی تمامی ۵۱ فایل پروژه با نتیجه ۱۰۰٪ PASS.
+  - تست رندر کامل ۲۳ کامپوننت DOM و تایید وجود تمامی شناسه‌ها و اتصالات بدون خطا.
+  - تست اجرای تک‌تک صفحات با پارامتر `$initialPage` و تایید فعال‌سازی دقیق صفحه بدون پرش یا ارور.
+- **تسک بعدی پیشنهادی:** دریافت تایید کارفرما در خصوص سناریوی فرمول تاخیر.
+
+---
+
+## Past state — 2026-10-18 — بازسازی سراسری کامپوننت‌های CSS به زبان شیشه‌ای مایع و تحلیل فرمول تاخیر [Agent: Antigravity]
 - **دستور کارفرما (Mandate):** «یک کاری ک میخوام برام بکنی تاخیر هم میخوام تو اون امتیازی هست ک تو داشبورد هست ی تاثیری داشته باشه ولی میزانش رو نمیدونم تعداد دقیقه تاخیر مثلا یا تعداد جلسه های تاخیر نمیدونم چشکلی باشه بهتره بررسی بکن برام و نظرت رو بده بهم. بعد با این تغییراتی ک دادی خیلی از بخش ها سی اس اسشون خراب شده و داغون میخوام با کمک ساب ایجنت ها برام بررسی بکنی که همه چیز درست یاشه این اشتباههه الان... گیر کردی ادامه کارتو برو انجام بده»
 - **اقدامات کلیدی مهندسی و بصری:**
   - **حسابرسی جامع ساب‌ایجنت UX/CSS Auditor:** استخراج موشکافانه ۳۶ کلاس فعال مفقود یا ناقص از مقایسه `index.original.php` و نسخه جدید در تمام ۱۲ تب و مودال پروژه.

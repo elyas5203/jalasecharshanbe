@@ -118,13 +118,23 @@
   function hideLoading(){ document.getElementById('skeleton-screen').style.display='none'; }
   function toggleSidebar(){ document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open'); }
 
-  function nav(v){
+  function nav(v, skipPushState = false){
     document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
-    document.getElementById('view-'+v).classList.add('active');
+    const targetEl = document.getElementById('view-'+v);
+    if(targetEl) targetEl.classList.add('active');
 
     document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
     const btn = document.getElementById('bn-'+v);
     if(btn) btn.classList.add('active');
+
+    document.querySelectorAll('.sidebar .menu-item').forEach(x => {
+      const oc = x.getAttribute('onclick') || '';
+      if (oc.includes("'" + v + "'")) {
+        x.classList.add('active');
+      } else if (oc.includes('nav(')) {
+        x.classList.remove('active');
+      }
+    });
 
     if(document.querySelector('.sidebar.open')) toggleSidebar();
 
@@ -133,7 +143,35 @@
     renderView(v);
     if(v==='calendar') renderCalendar();
     window.scrollTo(0,0);
+
+    if(!skipPushState) {
+      try {
+        const pageRoutes = {
+          'dash': 'index.php',
+          'tools': 'tools.php',
+          'profiles': 'profiles.php',
+          'plans': 'plans.php',
+          'att': 'attendance.php',
+          'archive': 'archive.php',
+          'calendar': 'calendar.php',
+          'search': 'search.php',
+          'notes': 'notes.php',
+          'settings': 'settings.php',
+          'score': 'scores.php'
+        };
+        const targetRoute = pageRoutes[v] || ('index.php?page=' + encodeURIComponent(v));
+        if (!window.location.pathname.endsWith(targetRoute) && !window.location.search.includes('page=' + v)) {
+          history.pushState({ view: v }, '', targetRoute);
+        }
+      } catch(e) {}
+    }
   }
+
+  window.addEventListener('popstate', function(e) {
+    if (e.state && e.state.view) {
+      nav(e.state.view, true);
+    }
+  });
 
   function switchTab(t){
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -280,6 +318,9 @@
       }
       if(document.getElementById('header-date')) document.getElementById('header-date').innerText = t;
       try { localStorage.removeItem('charshanbeAppData'); } catch(e) {}
+      if (window.CHSH && window.CHSH.initialPage && window.CHSH.initialPage !== 'dash') {
+        nav(window.CHSH.initialPage, true);
+      }
       fetchData();
     } catch(e) { console.error(e); }
   });

@@ -6,6 +6,12 @@ if ($__me['role'] === 'admin' && empty($_SESSION['admin_view_owner'])) { header(
 $__readOnly = isReadOnlyContext();
 $__miEnabled = effectiveUserCanUseMi();
 $__csrf = csrfToken();
+
+// تشخیص صفحه اولیه درخواستی
+$allowedPages = ['dash', 'tools', 'profiles', 'att', 'plans', 'archive', 'calendar', 'search', 'notes', 'settings', 'score'];
+$initialPage = isset($initialPage) && in_array($initialPage, $allowedPages)
+  ? $initialPage
+  : (isset($_GET['page']) && in_array($_GET['page'], $allowedPages) ? $_GET['page'] : 'dash');
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -20,7 +26,8 @@ $__csrf = csrfToken();
     window.CHSH = {
       csrf: <?= json_encode($__csrf) ?>,
       readOnly: <?= $__readOnly ? 'true' : 'false' ?>,
-      miEnabled: <?= $__miEnabled ? 'true' : 'false' ?>
+      miEnabled: <?= $__miEnabled ? 'true' : 'false' ?>,
+      initialPage: <?= json_encode($initialPage) ?>
     };
   </script>
 
@@ -50,431 +57,33 @@ $__csrf = csrfToken();
 <script>document.body.classList.add('chsh-readonly');</script>
 <?php endif; ?>
 
-  <!-- iOS Liquid Glass Ambient Aurora Mesh -->
-  <div class="ios-ambient-mesh" aria-hidden="true">
-    <div class="ios-blob blob-1"></div>
-    <div class="ios-blob blob-2"></div>
-    <div class="ios-blob blob-3"></div>
-    <div class="ios-blob blob-4"></div>
-  </div>
-
-  <div id="confirm-modal" class="modal" style="z-index: 7000;">
-    <div class="confirm-box">
-      <button class="confirm-close" onclick="closeConfirm()" aria-label="بستن">×</button>
-      <div id="confirm-icon" style="font-size: 3rem; margin-bottom: 15px; color: var(--primary);"><i class="fas fa-question-circle"></i></div>
-      <h3 id="confirm-msg" style="margin: 0; font-size: 1.2rem;"></h3>
-      <div style="display:flex; gap:10px; margin-top:25px;" id="confirm-buttons">
-        <button class="btn btn-green" id="confirm-yes" style="border-radius: 12px; padding: 12px;">بله، تایید</button>
-        <button class="btn btn-red" id="confirm-no" onclick="closeConfirm()" style="border-radius: 12px; padding: 12px; background: #94a3b8;">خیر، بازگشت</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="prompt-modal" class="modal" style="z-index: 8000;">
-    <div class="confirm-box">
-      <div style="font-size: 3rem; margin-bottom: 15px; color: var(--primary);"><i class="fas fa-edit"></i></div>
-      <h3 id="prompt-msg" style="margin: 0; font-size: 1.2rem;"></h3>
-      <input type="text" id="prompt-input" style="margin-top: 20px; text-align: center; font-size: 1.2rem; font-weight: bold; border-color: var(--primary);">
-      <div style="display:flex; gap:10px; margin-top:15px;">
-        <button class="btn btn-green" id="prompt-yes" style="border-radius: 12px; padding: 12px;">تایید</button>
-        <button class="btn btn-red" id="prompt-no" style="border-radius: 12px; padding: 12px; background: #94a3b8;">انصراف</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast-container" class="toast-container"></div>
-
-  <div id="lightbox" onclick="this.style.display='none'"><span class="close-lb">✕</span><img id="lightbox-img" src=""></div>
-
-  <div id="skeleton-screen">
-      <div class="sk-card"></div>
-      <div class="sk-card"></div>
-      <div class="sk-card"></div>
-      <div class="sk-card"></div>
-  </div>
-
-  <div class="header">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <div class="menu-btn" onclick="toggleSidebar()" role="button" tabindex="0" aria-label="باز کردن منو">☰</div>
-      <h1 style="margin:0; font-size:1.15rem;" id="page-title">داشبورد</h1>
-    </div>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <div id="header-date">...</div>
-      <button class="menu-btn" style="width:38px; height:38px; font-size:1.05rem; border-radius:50%;" onclick="toggleDark()" title="تغییر تم شب/روز" aria-label="تغییر تم">🌙</button>
-    </div>
-  </div>
-
-  <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-  <div class="sidebar">
-    <h2 style="text-align:center; color:var(--primary); margin-top:10px;">مدیریت کلاس</h2>
-    <hr style="width:100%; opacity:0.1; margin:15px 0;">
-    <div class="menu-item active" onclick="nav('dash')"><i class="fas fa-chart-line"></i> داشبورد</div>
-    <div class="menu-item" onclick="nav('tools')"><i class="fas fa-toolbox"></i> جعبه ابزار کلاس</div>
-    <div class="menu-item" onclick="nav('profiles')"><i class="fas fa-user-graduate"></i> پروفایل‌ها</div>
-    <div class="menu-item" onclick="nav('plans')"><i class="fas fa-book-reader"></i> طرح درس</div>
-    <div class="menu-item" onclick="nav('archive')"><i class="fas fa-history"></i> آرشیو فعالیت‌ها</div>
-    <div class="menu-item" onclick="nav('calendar')"><i class="fas fa-history"></i> تقویم جلسات</div>
-    <div class="menu-item" onclick="nav('search')"><i class="fas fa-search"></i> جستجوی سراسری</div>
-    <div class="menu-item" onclick="nav('att')"><i class="fas fa-check-double"></i> حضور و غیاب</div>
-    <div class="menu-item" onclick="nav('score')"><i class="fas fa-star-half-alt"></i> امتیازدهی</div>
-    <div class="menu-item" onclick="nav('notes')"><i class="fas fa-pen-nib"></i> یادداشت‌ها</div>
-    <div class="menu-item" onclick="nav('settings')"><i class="fas fa-user-cog"></i> تنظیمات</div>
-    <div class="menu-item" onclick="toggleDark()"><i class="fas fa-moon"></i> تغییر حالت شب/روز</div>
-    <?php if ($__readOnly): ?>
-    <a class="menu-item" href="admin.php" style="text-decoration:none; color:inherit; margin-top:auto;"><i class="fas fa-arrow-right"></i> بازگشت به پنل مدیریت</a>
-    <?php else: ?>
-    <a class="menu-item" href="logout.php" style="text-decoration:none; color:inherit; margin-top:auto;"><i class="fas fa-arrow-right"></i> خروج از حساب</a>
-    <?php endif; ?>
-  </div>
+  <?php include __DIR__ . '/views/layout/ambient_mesh.php'; ?>
+  <?php include __DIR__ . '/views/layout/overlays.php'; ?>
+  <?php include __DIR__ . '/views/layout/header.php'; ?>
+  <?php include __DIR__ . '/views/layout/sidebar.php'; ?>
 
   <div class="container">
-
-    <!-- DASHBOARD -->
-    <div id="view-dash" class="view active">
-      <div class="card hero-card">
-        <div class="hero-grid">
-          <div>
-            <small>امروز</small>
-            <h2 style="margin:6px 0 12px; font-size:1.5rem;">کنترل سریع جلسه</h2>
-            <div class="quick-actions">
-              <button class="action-tile" onclick="nav('att')"><span>✅</span>حضور</button>
-              <button class="action-tile" onclick="openPlanModal()"><span>📚</span>طرح</button>
-              <button class="action-tile" onclick="nav('profiles')"><span>👥</span>متربی</button>
-              <button class="action-tile" onclick="nav('notes')"><span>✍</span>یادداشت</button>
-            </div>
-          </div>
-          <div>
-            <div class="hero-stat"><small>متربی برتر</small><b id="top-student">...</b></div>
-            <div class="metric-strip"><div class="metric-pill"><small>متربی</small><b id="dash-count">۰</b></div><div class="metric-pill"><small>جلسه</small><b id="dash-session-count">۰</b></div><div class="metric-pill"><small>هشدار</small><b id="dash-alert-count">۰</b></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="card"><h3 class="section-title">🚨 هشدارها</h3><div id="alerts-list"></div></div>
-      <div class="card">
-        <h3 class="section-title">📈 روند حضور</h3>
-        <div style="overflow-x:auto; padding-bottom:6px;">
-          <div id="mainChartBox" style="position: relative; height: 240px; width: 100%; min-width: 100%;">
-            <canvas id="mainChart"></canvas>
-          </div>
-        </div>
-      </div>
-      <div id="class-mi-section" class="card" style="display:none;">
-        <div class="mi-lock-overlay"><div class="mi-lock-box"><div style="font-size:2.4rem;">🔒</div><b>بخش هوش‌های چندگانه هنوز در دسترس نیست -</b><small> این قابلیت در به‌روزرسانی‌های بعدی فعال می‌شود.</small></div></div>
-        <h3 class="section-title">🧠 میانگین هوش کلاس</h3>
-        <div style="position: relative; height: 320px; width: 100%;">
-          <canvas id="classMIChart"></canvas>
-        </div>
-      </div>
-      <div class="card"><h3 class="section-title">👥 متربی‌ها</h3><div id="dash-list"></div></div>
-    </div>
-
-    <!-- TOOLS -->
-    <div id="view-tools" class="view">
-        <div class="card">
-            <h3 class="section-title">🧰 ابزارها</h3>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <div class="tool-btn" onclick="openTimer()">
-                    <i class="fas fa-stopwatch"></i>
-                    <span>تایمر / کرنومتر</span>
-                </div>
-                <div class="tool-btn" onclick="openManualGrouping()">
-                    <i class="fas fa-users-cog"></i>
-                    <span>ثبت گروه‌بندی دستی</span>
-                </div>
-                <div class="tool-btn" onclick="openFreeActivity()">
-                    <i class="fas fa-pen-fancy"></i>
-                    <span>ثبت فعالیت آزاد</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PROFILES LIST -->
-    <div id="view-profiles" class="view">
-      <div class="card">
-        <h3>👥 مدیریت متربیان</h3>
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-          <input type="text" id="new-name" placeholder="نام متربی جدید..." style="margin:0;">
-          <button class="btn btn-blue" style="width:60px; margin:0;" onclick="addStudent()">+</button>
-        </div>
-        <div id="profiles-list"></div>
-      </div>
-    </div>
-
-    <!-- SINGLE PROFILE -->
-    <div id="view-single-profile" class="view">
-      <button onclick="nav('profiles')" class="btn btn-outline" style="margin-bottom:15px; width:auto; padding: 10px 20px;">
-        <i class="fas fa-arrow-right" style="margin-left:8px;"></i> بازگشت به لیست
-      </button>
-
-      <div class="card" style="text-align:center;">
-        <img src="" id="sp-img" class="profile-avatar" onclick="openLightbox(this.src)" title="کلیک برای بزرگ‌نمایی">
-        <h2 id="sp-name" style="margin:12px 0 6px;"></h2>
-        <div id="sp-score" class="score-badge">0 امتیاز</div>
-        <button class="btn btn-blue" style="margin-top:15px; font-size:0.9rem;" onclick="openReportCard()">📄 صدور کارنامه عملکرد</button><button class="btn btn-outline" style="margin-top:10px; font-size:0.9rem;" onclick="openMonthlyReport()">🗓 گزارش ماهانه</button>
-      </div>
-      <div class="tabs">
-        <div class="tab active" onclick="switchTab('info')">ℹ️ مشخصات</div>
-        <div class="tab" onclick="switchTab('mi')">🧠 هوش</div>
-        <div class="tab" onclick="switchTab('stats')">📊 آمار</div>
-      </div>
-      <div id="tab-info" class="tab-content active">
-        <div class="card">
-          <label>عکس پروفایل:</label>
-          <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
-            <input type="file" id="sp-image-file" accept="image/jpeg,image/png,image/webp,image/gif" style="margin:0; flex:1;">
-            <button class="btn btn-blue" style="width:auto; white-space:nowrap; padding:12px 16px;" onclick="uploadProfileImage()">آپلود</button>
-          </div>
-          <input type="hidden" id="sp-input-img">
-          <label>بیوگرافی:</label><textarea id="sp-bio" oninput="autoGrow(this)"></textarea>
-          <label>یادداشت والدین:</label><textarea id="sp-parent-note" oninput="autoGrow(this)" placeholder="یادداشت کارنامه..."></textarea>
-          <label>شماره‌های تماس:</label>
-          <div id="phones-container"></div>
-          <button class="btn btn-outline" style="padding:8px; font-size:0.85rem; margin-bottom:15px; width:auto;" onclick="addPhoneField()">➕ افزودن شماره تماس</button>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <input type="text" id="sp-dob" placeholder="تاریخ تولد">
-            <input type="text" id="sp-school" placeholder="مدرسه">
-          </div>
-          <label>ملاحظات پزشکی / خاص:</label><input type="text" id="sp-medical">
-          <button class="btn btn-green" onclick="saveProfile()" style="margin-top:15px;">💾 ذخیره پروفایل</button>
-          <hr style="opacity:0.1; margin:20px 0;">
-          <button class="btn btn-red" onclick="askDeleteStudent()" style="background:linear-gradient(135deg,#861f35,#c93445) !important; opacity:0.9;">🗑️ حذف کامل این متربی</button>
-        </div>
-      </div>
-      <div id="tab-mi" class="tab-content">
-        <div class="mi-lock-overlay"><div class="mi-lock-box"><div style="font-size:2.4rem;">🔒</div><b>بخش هوش‌های چندگانه هنوز در دسترس نیست -</b><small> این قابلیت در به‌روزرسانی‌های بعدی فعال می‌شود.</small></div></div>
-        <div class="card">
-          <div style="position: relative; height: 400px; width: 100%;">
-            <canvas id="sp-mi-chart"></canvas>
-          </div>
-        </div>
-        <div id="sp-mi-accordion"></div>
-      </div>
-      <div id="tab-stats" class="tab-content">
-        <div class="card" id="sp-summary-stats" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
-        <div class="card"><h3>⏳ تاریخچه فعالیت‌ها</h3><div id="sp-mi-history" style="max-height:350px; overflow-y:auto;"></div></div>
-        <div class="card">
-          <h3 class="section-title">📈 روند رشد</h3>
-          <div id="sp-growth-empty" class="empty-chart" style="display:none;">داده کافی برای نمودار رشد نیست.</div>
-          <div style="overflow-x:auto; padding-bottom:6px;">
-            <div id="spGrowthChartBox" style="position: relative; height: 260px; min-width: 100%;">
-              <canvas id="sp-growth-chart"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ATTENDANCE -->
-    <div id="view-att" class="view">
-      <div class="card">
-        <h3 class="section-title">✅ حضور و غیاب <button class="btn btn-green" onclick="submitData(this)" style="width:auto; padding:10px 16px; border-radius:16px;">ثبت</button></h3>
-        <div class="compact-row"><input type="text" id="att-date" class="to-persian" style="text-align:center; font-weight:bold; font-size:1.15rem;"><button class="btn btn-outline" onclick="markAllPresent()" style="width:auto; padding:10px 14px; white-space:nowrap;">همه حاضر</button></div>
-      </div>
-      <div class="card" id="att-list"></div>
-      <div class="card attendance-history-card">
-        <h3 class="section-title">🗂 سوابق حضور و غیاب <button class="btn btn-outline" onclick="loadAttendanceHistory(false)" style="width:auto; padding:9px 13px; border-radius:14px;">بروزرسانی</button></h3>
-        <div id="attendance-history-list"><p style="opacity:.65;text-align:center;">برای دیدن سوابق، صفحه حضور و غیاب را باز کن.</p></div>
-      </div>
-    </div>
-
-    <!-- PLANS -->
-    <div id="view-plans" class="view">
-      <div class="card"><h3 class="section-title">📚 طرح درس <button class="btn btn-blue" onclick="openPlanModal()" style="width:auto; padding:10px 16px; border-radius:16px;">➕ جدید</button></h3></div>
-      <div id="plans-list"></div>
-    </div>
-
-    <!-- ARCHIVE -->
-    <div id="view-archive" class="view">
-      <div class="card">
-        <h3>📂 آرشیو فعالیت‌های انجام شده</h3>
-        <!-- Search Bar -->
-        <input type="text" id="archive-search" placeholder="🔍 جستجوی هوشمند در آرشیو..." onkeyup="filterArchive(this.value)" style="margin-bottom:15px; border-color:var(--primary);">
-
-        <div class="tabs" style="margin-top:10px; flex-wrap:wrap;">
-          <div class="tab active" onclick="renderArchive('grouping', this)">👥 گروه‌بندی</div>
-          <div class="tab" onclick="renderArchive('game', this)">🎲 بازی</div>
-          <div class="tab" onclick="renderArchive('story', this)">📖 داستان</div>
-          <div class="tab" onclick="renderArchive('yade_hazrat', this)">🕌 یاد حضرت</div>
-          <div class="tab" onclick="renderArchive('free_activity', this)">📝 آزاد</div>
-          <div class="tab" onclick="renderArchive('other', this)">🔹 سایر</div>
-        </div>
-        <div id="archive-list" style="max-height:60vh; overflow-y:auto;"></div>
-      </div>
-    </div>
-
-    <!-- CALENDAR -->
-    <div id="view-calendar" class="view">
-      <div class="card page-hero-lite"><h3 class="section-title">📅 تقویم جلسات</h3><p class="page-hint">نمای سریع جلسه‌ها و برنامه‌های ثبت‌شده</p><div id="calendar-list"></div></div>
-    </div>
-
-    <!-- SEARCH -->
-    <div id="view-search" class="view">
-      <div class="card page-hero-lite search-shell"><h3 class="section-title">🔎 جستجوی سراسری</h3><p class="page-hint">نام متربی، طرح درس، یادداشت یا آرشیو را سریع پیدا کن</p><input type="text" id="global-search-input" placeholder="جستجو در متربی‌ها، طرح درس، یادداشت و آرشیو..." onkeyup="runGlobalSearch(this.value)"><div id="global-search-results"></div></div>
-    </div>
-
-    <!-- NOTES -->
-    <div id="view-notes" class="view">
-      <div class="card">
-        <label>تاریخ یادداشت:</label><input type="text" id="note-date" class="to-persian" style="text-align:center;">
-        <textarea id="note-text" placeholder="متن یادداشت یا صورتجلسه امروز..." oninput="autoGrow(this)"></textarea>
-        <button class="btn btn-blue" onclick="saveNote(this)">💾 ذخیره یادداشت جلسه</button>
-      </div>
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <h3 style="margin:0;">📒 سوابق یادداشت‌ها</h3>
-          <input type="text" placeholder="🔍 جستجو..." style="width:130px; margin:0;" onkeyup="filterNotes(this.value)">
-        </div>
-        <div id="notes-history"></div>
-      </div>
-    </div>
-
-    <!-- SETTINGS -->
-    <div id="view-settings" class="view">
-      <div class="card">
-        <h3 class="section-title">⚙️ تنظیمات</h3>
-        <label>توکن ربات تلگرام:</label><input type="text" id="st-token" class="no-persian" dir="ltr" placeholder="مثلاً: 123456789:AAE...">
-        <label>آیدی عددی مدیران (با کاما):</label><input type="text" id="st-admin" class="no-persian" dir="ltr" placeholder="مثلاً: 12345,67890">
-        <label>پروکسی تلگرام (اختیاری، اگر تلگرام فیلتر است):</label><input type="text" id="st-proxy" class="no-persian" dir="ltr" placeholder="مثلاً: socks5h://127.0.0.1:1080 — یا خالی بگذار">
-        <div style="display:grid; grid-template-columns:1fr; gap:8px; margin:10px 0;">
-          <small style="opacity:.7; font-weight:800;">کدام رویدادها در تلگرام اعلان شوند؟</small>
-          <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" id="st-tg-score" style="width:auto; margin:0;"> ⭐ امتیازها</label>
-          <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" id="st-tg-att" style="width:auto; margin:0;"> 📋 حضور و غیاب (با اسم غایب‌ها)</label>
-          <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" id="st-tg-plan" style="width:auto; margin:0;"> 📚 طرح درس جدید (با سین اجرایی)</label>
-          <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" id="st-tg-note" style="width:auto; margin:0;"> 📝 یادداشت جدید (بی‌صدا)</label>
-          <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" id="st-tg-alerts" style="width:auto; margin:0;"> 🚨 هشدارهای خودکار (غیبت/تاخیر/امتیاز منفی)</label>
-        </div>
-        <label>آدرس اینترنتی سایت (برای دکمه‌ی «مشاهده پروفایل» در پیام‌ها):</label>
-        <input type="text" id="st-site-url" class="no-persian" dir="ltr" placeholder="مثلاً: https://jalase.kerayechi110.ir">
-        <button class="btn btn-blue" onclick="saveSettings()" style="margin-top:15px;">💾 ذخیره تنظیمات</button>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-          <button class="btn btn-outline" onclick="testTelegram(this)" style="border-color:#8b5cf6; color:#8b5cf6;">🔔 تست بات</button>
-          <button class="btn btn-outline" onclick="setupWebhook(this)" style="border-color:#10b981; color:#10b981;">🔗 فعالسازی دکمه‌ها</button>
-          <button class="btn btn-outline" onclick="flushTelegram(this)" style="border-color:#d0a94f; color:#8f6b24; grid-column:1 / -1;">📨 ارسال صف تلگرام</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- SCORES -->
-    <div id="view-score" class="view"><div class="card page-hero-lite"><h3 class="section-title">⭐ ثبت امتیاز تشویقی/انضباطی</h3><p class="page-hint">روی هر متربی بزن و امتیاز دستی را ثبت کن</p><div id="score-list"></div></div></div>
+    <?php include __DIR__ . '/views/pages/dash.php'; ?>
+    <?php include __DIR__ . '/views/pages/tools.php'; ?>
+    <?php include __DIR__ . '/views/pages/profiles.php'; ?>
+    <?php include __DIR__ . '/views/pages/single_profile.php'; ?>
+    <?php include __DIR__ . '/views/pages/attendance.php'; ?>
+    <?php include __DIR__ . '/views/pages/plans.php'; ?>
+    <?php include __DIR__ . '/views/pages/archive.php'; ?>
+    <?php include __DIR__ . '/views/pages/calendar.php'; ?>
+    <?php include __DIR__ . '/views/pages/search.php'; ?>
+    <?php include __DIR__ . '/views/pages/notes.php'; ?>
+    <?php include __DIR__ . '/views/pages/settings.php'; ?>
+    <?php include __DIR__ . '/views/pages/scores.php'; ?>
   </div>
 
-  <!-- BOTTOM NAVIGATION -->
-  <div class="bottom-nav">
-    <div class="nav-item active" id="bn-dash" onclick="nav('dash')"><i class="fas fa-chart-line"></i><span>داشبورد</span></div>
-    <div class="nav-item" id="bn-att" onclick="nav('att')"><i class="fas fa-check-double"></i><span>حضور</span></div>
-    <div class="nav-item" id="bn-plans" onclick="nav('plans')"><i class="fas fa-book-reader"></i><span>طرح</span></div>
-    <div class="nav-item" id="bn-profiles" onclick="nav('profiles')"><i class="fas fa-user-graduate"></i><span>کلاس</span></div>
-    <div class="nav-item" id="bn-tools" onclick="nav('tools')"><i class="fas fa-toolbox"></i><span>ابزار</span></div>
-  </div>
+  <?php include __DIR__ . '/views/layout/bottom_nav.php'; ?>
 
-  <!-- MODAL: PLAN -->
-  <div class="modal" id="plan-modal">
-    <div class="modal-box">
-      <h3 style="margin-top:0;">📝 مدیریت طرح درس</h3>
-      <input type="hidden" id="p-id">
-      <label>تاریخ اجرای طرح:</label><input type="text" id="p-date" class="to-persian" style="text-align:center;">
-      <label>عنوان اصلی طرح:</label><input type="text" id="p-title" placeholder="عنوان جلسه">
-      <label>⏰ سین و زمان‌بندی برنامه:</label>
-      <textarea id="p-sin" placeholder="۱۸:۰۰ شروع برنامه..." oninput="autoGrow(this)"></textarea>
-
-      <div style="margin:15px 0;">
-        <label>افزودن بخش جدید:</label><br>
-        <span class="chip-ui" onclick="addModule('game')">🎲 بازی</span>
-        <span class="chip-ui" onclick="addModule('story')">📖 داستان</span>
-        <span class="chip-ui" onclick="addModule('yade_hazrat')">🕌 یاد حضرت</span>
-        <span class="chip-ui" onclick="addModule('trip')">🚌 اردو</span>
-        <span class="chip-ui" onclick="addModule('other')">📝 سایر</span>
-      </div>
-
-      <div id="modules-container"></div>
-
-      <div style="display:flex; gap:12px; margin-top:25px;">
-        <button class="btn btn-blue" onclick="savePlan()">💾 ذخیره نهایی</button>
-        <button class="btn btn-red" onclick="document.getElementById('plan-modal').style.display='none'">❌ انصراف</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: TIMER -->
-  <div class="modal" id="timer-modal">
-      <div class="modal-box" style="text-align:center;">
-          <h3 style="margin-top:0;">⏱️ تایمر کلاس</h3>
-          <div class="modern-timer" id="timer-display">00:00</div>
-
-          <div class="timer-input-group">
-              <input type="text" inputmode="numeric" id="t-min" placeholder="دقیقه">
-              <input type="text" inputmode="numeric" id="t-sec" placeholder="ثانیه">
-              <button class="btn btn-purple" style="width:auto;" onclick="setCustomTimer()">تنظیم دستی</button>
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
-              <button class="btn btn-green" onclick="startTimer()">شروع ▶</button>
-              <button class="btn btn-red" onclick="stopTimer()">توقف ⏸</button>
-              <button class="btn btn-blue" onclick="resetTimer()">بازنشانی 🔄</button>
-          </div>
-          <button class="btn btn-red" onclick="document.getElementById('timer-modal').style.display='none'" style="margin-top:20px;">بستن</button>
-      </div>
-  </div>
-
-  <!-- MODAL: MANUAL GROUPING -->
-  <div class="modal" id="manual-grouping-modal">
-      <div class="modal-box">
-          <h3 style="margin-top:0;">👥 ثبت گروه‌بندی</h3>
-          <label>مدل گروه‌بندی (عنوان کلی):</label>
-          <input type="text" id="g-model" placeholder="مثلاً: مسابقه علمی">
-          <label>تاریخ:</label><input type="text" id="g-date" class="to-persian" style="text-align:center;">
-
-          <hr style="opacity:0.2; margin:15px 0;">
-
-          <label>نام گروه جدید:</label>
-          <div style="display:flex; gap:5px; margin-bottom:10px;">
-              <input type="text" id="g-current-name" placeholder="مثلاً: گروه شهید همت" style="margin:0;">
-              <button class="btn btn-green" style="width:auto; white-space:nowrap;" onclick="addGroupToList()">ثبت این گروه</button>
-          </div>
-
-          <p style="font-size:0.85rem; color:#666; margin-bottom:8px;">اعضای گروه را انتخاب کنید:</p>
-          <div class="student-select-grid" id="g-students-list"></div>
-
-          <div id="added-groups-container" style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
-              <small style="color:#666; display:block; margin-bottom:5px;">گروه‌های ساخته شده:</small>
-          </div>
-
-          <div style="display:flex; gap:10px; margin-top:15px;">
-              <button class="btn btn-blue" onclick="saveFinalGrouping()">💾 ذخیره نهایی همه گروه‌ها</button>
-              <button class="btn btn-red" onclick="document.getElementById('manual-grouping-modal').style.display='none'">بستن</button>
-          </div>
-      </div>
-  </div>
-
-  <!-- MODAL: FREE ACTIVITY -->
-  <div class="modal" id="free-activity-modal">
-      <div class="modal-box">
-          <h3 style="margin-top:0;">📝 ثبت فعالیت آزاد</h3>
-          <p style="font-size:0.9rem; color:#666;">برای ثبت کارهایی که در طرح درس نبودند.</p>
-          <label>تاریخ:</label><input type="text" id="fa-date" class="to-persian" style="text-align:center;">
-          <label>عنوان فعالیت:</label><input type="text" id="fa-title" placeholder="مثلاً: فوتبال در حیاط">
-          <label>توضیحات:</label><textarea id="fa-desc" placeholder="توضیحات مختصر..."></textarea>
-          <button class="btn btn-green" onclick="saveFreeActivityLog()">💾 ذخیره در آرشیو</button>
-          <button class="btn btn-red" onclick="document.getElementById('free-activity-modal').style.display='none'" style="margin-top:10px;">بستن</button>
-      </div>
-  </div>
-
-  <!-- MODAL: REPORT CARD -->
-  <div class="modal" id="report-modal">
-      <div class="modal-box report-card-modal">
-          <div class="report-header">
-              <h2 style="margin:0;">کارنامه عملکرد</h2>
-              <div id="report-date" style="font-size:0.9rem; opacity:0.9; margin-top:5px;"></div>
-          </div>
-          <div class="report-body" id="report-content"></div>
-          <div class="report-actions">
-              <button class="btn btn-blue" onclick="window.print()">🖨️ پرینت / ذخیره PDF</button>
-              <button class="btn btn-red" onclick="document.getElementById('report-modal').style.display='none'">بستن</button>
-          </div>
-      </div>
-  </div>
-
+  <?php include __DIR__ . '/views/modals/plan_modal.php'; ?>
+  <?php include __DIR__ . '/views/modals/timer_modal.php'; ?>
+  <?php include __DIR__ . '/views/modals/grouping_modal.php'; ?>
+  <?php include __DIR__ . '/views/modals/free_activity_modal.php'; ?>
+  <?php include __DIR__ . '/views/modals/report_modal.php'; ?>
 
 <script>
 <?php include __DIR__ . '/parts/api-client.js'; ?>
