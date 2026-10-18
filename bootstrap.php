@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-const SCHEMA_VERSION = '8';
+const SCHEMA_VERSION = '9';
 
 // شناسه رزرو‌شده برای تنظیمات سراسری (غیر وابسته به کاربر) مثل نسخه‌ی ساختار
 const GLOBAL_OWNER = 0;
@@ -49,15 +49,23 @@ function schemaIsCurrent(PDO $pdo): bool {
 }
 
 function ensureIndex(PDO $pdo, string $table, string $index, string $sql): void {
-    $st = $pdo->prepare('SHOW INDEX FROM `' . $table . '` WHERE Key_name=?');
-    $st->execute([$index]);
-    if (!$st->fetch()) $pdo->exec($sql);
+    try {
+        $st = $pdo->prepare("SELECT TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
+        $st->execute([$table]);
+        $type = $st->fetchColumn();
+        if ($type !== 'BASE TABLE') return;
+        $st = $pdo->prepare('SHOW INDEX FROM `' . $table . '` WHERE Key_name=?');
+        $st->execute([$index]);
+        if (!$st->fetch()) $pdo->exec($sql);
+    } catch (Throwable $e) {
+        // نادیده گرفتن در صورت تکرار یا ساختارهای ناسازگار
+    }
 }
 
 function initSchema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS students (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(190) NOT NULL UNIQUE, absences INT NOT NULL DEFAULT 0, late_count INT NOT NULL DEFAULT 0, score DECIMAL(10,2) NOT NULL DEFAULT 0, status VARCHAR(100) NOT NULL DEFAULT 'ثبت نام', image TEXT NULL, manual_score DECIMAL(10,2) NOT NULL DEFAULT 0, bio TEXT NULL, phones JSON NULL, parent_phone VARCHAR(100) NULL, dob VARCHAR(50) NULL, school VARCHAR(190) NULL, medical TEXT NULL, parent_note TEXT NULL, late_minutes INT NOT NULL DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $pdo->exec("CREATE TABLE IF NOT EXISTS attendance_sessions (id INT AUTO_INCREMENT PRIMARY KEY, session_date VARCHAR(20) NOT NULL UNIQUE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-    $pdo->exec("CREATE TABLE IF NOT EXISTS attendance_records (id INT AUTO_INCREMENT PRIMARY KEY, session_id INT NOT NULL, student_id INT NOT NULL, status VARCHAR(20) NOT NULL, late_minutes INT NOT NULL DEFAULT 0, status_text VARCHAR(100) NOT NULL, UNIQUE KEY uniq_att (session_id, student_id), CONSTRAINT fk_att_session FOREIGN KEY (session_id) REFERENCES attendance_sessions(id) ON DELETE CASCADE, CONSTRAINT fk_att_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS attendance_records (id INT AUTO_INCREMENT PRIMARY KEY, session_id INT NOT NULL, student_id INT NOT NULL, status VARCHAR(20) NOT NULL, late_minutes INT NOT NULL DEFAULT 0, absence_reason VARCHAR(255) NULL, status_text VARCHAR(100) NOT NULL, UNIQUE KEY uniq_att (session_id, student_id), CONSTRAINT fk_att_session FOREIGN KEY (session_id) REFERENCES attendance_sessions(id) ON DELETE CASCADE, CONSTRAINT fk_att_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (`key` VARCHAR(100) PRIMARY KEY, `value` TEXT NULL, description TEXT NULL) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $pdo->exec("CREATE TABLE IF NOT EXISTS notes (id INT AUTO_INCREMENT PRIMARY KEY, note_date VARCHAR(20) NOT NULL, note_text TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $pdo->exec("CREATE TABLE IF NOT EXISTS plans (id VARCHAR(40) PRIMARY KEY, plan_date VARCHAR(20) NOT NULL, title VARCHAR(255) NOT NULL, priority VARCHAR(20) NOT NULL DEFAULT 'low', modules JSON NULL, sin TEXT NULL, status VARCHAR(50) NOT NULL DEFAULT 'Active', updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
@@ -72,6 +80,7 @@ function initSchema(PDO $pdo): void {
     // جدول کاربران و لایه‌ی چندمستأجری (احراز هویت + جداسازی داده‌ی جلسات)
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(100) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, display_name VARCHAR(190) NULL, role VARCHAR(20) NOT NULL DEFAULT 'user', is_active TINYINT(1) NOT NULL DEFAULT 1, must_change_password TINYINT(1) NOT NULL DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     migrateTenancy($pdo);
+    ensureColumn($pdo, 'attendance_records', 'absence_reason', 'VARCHAR(255) NULL');
     ensureIndex($pdo, 'attendance_records', 'idx_att_student_status', 'CREATE INDEX idx_att_student_status ON attendance_records (student_id, status)');
     ensureIndex($pdo, 'attendance_records', 'idx_att_session_status', 'CREATE INDEX idx_att_session_status ON attendance_records (session_id, status)');
     ensureIndex($pdo, 'attendance_sessions', 'idx_att_session_date_id', 'CREATE INDEX idx_att_session_date_id ON attendance_sessions (session_date, id)');

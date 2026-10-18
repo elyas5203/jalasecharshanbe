@@ -355,15 +355,31 @@ function submitAttendance(PDO $pdo, array $data): array {
         $st = $pdo->prepare('SELECT id FROM attendance_sessions WHERE session_date=? AND owner_id=?');
         $st->execute([$date, apiOwner()]);
         $sid = (int)$st->fetchColumn();
-        $up = $pdo->prepare('INSERT INTO attendance_records (session_id, student_id, status, late_minutes, status_text) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE status=VALUES(status), late_minutes=VALUES(late_minutes), status_text=VALUES(status_text)');
+        $up = $pdo->prepare('INSERT INTO attendance_records (session_id, student_id, status, late_minutes, absence_reason, status_text) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE status=VALUES(status), late_minutes=VALUES(late_minutes), absence_reason=VALUES(absence_reason), status_text=VALUES(status_text)');
         foreach (($data['records'] ?? []) as $rec) {
             $student = getStudentByName($pdo, $rec['name'] ?? ''); if (!$student) continue;
-            $status = $rec['status'] ?? 'Present'; $mins = (int)preg_replace('/[^0-9]/', '', toEnglishDigits($rec['min'] ?? '0'));
-            if ($status === 'Absent') { $txt = 'غیبت'; $lists['a'][] = $student['name']; }
-            elseif ($status === 'Late') { $txt = 'تاخیر (' . $mins . ' دقیقه)'; $lists['l'][] = $student['name'] . ' (' . $mins . 'د)'; }
-            elseif ($status === 'Excused') { $txt = 'موجه'; $lists['e'][] = $student['name']; }
-            else { $status = 'Present'; $txt = 'حاضر'; $lists['p'][] = $student['name']; }
-            $up->execute([$sid, $student['id'], $status, $mins, $txt]);
+            $status = $rec['status'] ?? 'Present';
+            $mins = (int)preg_replace('/[^0-9]/', '', toEnglishDigits($rec['min'] ?? '0'));
+            $reason = trim((string)($rec['reason'] ?? $rec['absence_reason'] ?? ''));
+            $reasonVal = ($reason !== '') ? $reason : null;
+
+            if ($status === 'Absent') {
+                $txt = 'غیبت' . ($reason !== '' ? " ($reason)" : '');
+                $lists['a'][] = $student['name'] . ($reason !== '' ? " (علت: $reason)" : '');
+            } elseif ($status === 'Late') {
+                $txt = 'تاخیر (' . $mins . ' دقیقه)' . ($reason !== '' ? " ($reason)" : '');
+                $lists['l'][] = $student['name'] . ' (' . $mins . 'د)' . ($reason !== '' ? " (علت: $reason)" : '');
+            } elseif ($status === 'Excused') {
+                $txt = 'موجه' . ($reason !== '' ? " ($reason)" : '');
+                $lists['e'][] = $student['name'] . ($reason !== '' ? " (علت: $reason)" : '');
+            } else {
+                $status = 'Present';
+                $mins = 0;
+                $reasonVal = null;
+                $txt = 'حاضر';
+                $lists['p'][] = $student['name'];
+            }
+            $up->execute([$sid, $student['id'], $status, $mins, $reasonVal, $txt]);
         }
         updateCalculations($pdo);
         $pdo->commit();
@@ -422,7 +438,7 @@ function getAttendanceSessionDetails(PDO $pdo, int $sessionId): array {
     $st->execute([$sessionId, apiOwner()]);
     $session = $st->fetch();
     if (!$session) return ['success'=>false, 'msg'=>'جلسه پیدا نشد'];
-    $st = $pdo->prepare('SELECT st.name, st.image, r.status, r.late_minutes, r.status_text
+    $st = $pdo->prepare('SELECT st.name, st.image, r.status, r.late_minutes, r.absence_reason, r.status_text
         FROM attendance_records r
         JOIN students st ON st.id=r.student_id
         WHERE r.session_id=?
@@ -435,6 +451,7 @@ function getAttendanceSessionDetails(PDO $pdo, int $sessionId): array {
             'image'=>fixUrl($r['image'] ?? ''),
             'status'=>$r['status'],
             'lateMinutes'=>(int)$r['late_minutes'],
+            'reason'=>$r['absence_reason'] ?? '',
             'text'=>$r['status_text'],
         ];
     }
@@ -609,7 +626,12 @@ function getStudentDetails(PDO $pdo, string $name): array {
         elseif ($r['status'] === 'Excused') { $sys += 0.5; $stats['e']++; }
         $gl[] = normalizeDateStr($r['session_date']); $gd[] = round($sys + (float)$srow['manual_score'], 2);
     }
-    $history = array_reverse(array_map(fn($r) => ['date'=>normalizeDateStr($r['session_date']), 'status'=>$r['status_text']], $histAsc));
+    $history = array_reverse(array_map(fn($r) => [
+        'date'=>normalizeDateStr($r['session_date']),
+        'status'=>$r['status_text'],
+        'reason'=>$r['absence_reason'] ?? '',
+        'statusCode'=>$r['status']
+    ], $histAsc));
     $roundedSys = round($sys, 2);
     $manualScore = (float)$srow['manual_score'];
     return ['history'=>$history, 'stats'=>$stats, 'scores'=>['system'=>$roundedSys, 'manual'=>$manualScore, 'total'=>round($roundedSys + $manualScore, 2)], 'growth'=>['labels'=>$gl, 'data'=>$gd]];
@@ -643,7 +665,14 @@ function getComprehensiveStudentHistory(PDO $pdo, string $studentName): array {
     $combined = [];
     foreach (getStudentMIProfile($pdo, $studentName)['history'] as $h) $combined[] = ['date'=>normalizeDateStr($h['date']), 'type'=>'mi', 'title'=>$h['type'], 'desc'=>$h['behavior'] . ' (' . ($h['score'] === 1 ? '✅ مثبت' : ($h['score'] === -1 ? '❌ منفی' : '⚪ خنثی')) . ')', 'score'=>$h['score'], 'icon'=>'🧠'];
     $details = getStudentDetails($pdo, $studentName);
-    foreach ($details['history'] as $h) { $icon = (strpos($h['status'], 'حاضر') !== false) ? '✅' : ((strpos($h['status'], 'غیبت') !== false) ? '❌' : ((strpos($h['status'], 'تاخیر') !== false) ? '⏰' : '📅')); $combined[] = ['date'=>normalizeDateStr($h['date']), 'type'=>'att', 'title'=>'حضور و غیاب', 'desc'=>$h['status'], 'icon'=>$icon]; }
+    foreach ($details['history'] as $h) {
+        $icon = (strpos($h['status'], 'حاضر') !== false) ? '✅' : ((strpos($h['status'], 'غیبت') !== false) ? '❌' : ((strpos($h['status'], 'تاخیر') !== false) ? '⏰' : '📅'));
+        $desc = $h['status'];
+        if (!empty($h['reason']) && strpos($desc, $h['reason']) === false) {
+            $desc .= ' (علت: ' . $h['reason'] . ')';
+        }
+        $combined[] = ['date'=>normalizeDateStr($h['date']), 'type'=>'att', 'title'=>'حضور و غیاب', 'desc'=>$desc, 'icon'=>$icon];
+    }
     $attDates = array_map(fn($h)=>normalizeDateStr($h['date']), $details['history']);
     foreach (getCombinedHistory($pdo) as $act) if (in_array(normalizeDateStr($act['date']), $attDates, true)) $combined[] = ['date'=>normalizeDateStr($act['date']), 'type'=>'activity', 'title'=>$act['title'], 'desc'=>$act['type']==='grouping' ? 'شرکت در گروه‌بندی' : ($act['details'] ?: 'شرکت در فعالیت کلاسی'), 'icon'=>'🎯'];
     usort($combined, fn($a,$b)=>strcmp($b['date'], $a['date']));

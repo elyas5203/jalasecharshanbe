@@ -14,7 +14,7 @@
 |---|---|---|---|
 | `students` | `bootstrap.php` | [`#L58`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L58) | پرونده متربیان، نمرات، عکس و اطلاعات تماس |
 | `attendance_sessions` | `bootstrap.php` | [`#L59`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L59) | سربرگ جلسات حضور و غیاب بر پایه تاریخ یکتا |
-| `attendance_records` | `bootstrap.php` | [`#L60`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L60) | وضعیت حضور تک‌تک متربیان در هر جلسه همراه با دقایق تاخیر |
+| `attendance_records` | `bootstrap.php` | [`#L60`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L60) | وضعیت حضور تک‌تک متربیان در هر جلسه همراه با دقایق تاخیر و علت غیبت (`absence_reason`) |
 | `settings` | `bootstrap.php` | [`#L61`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L61) | تنظیمات کلید-مقداری سراسری و ربات تلگرام |
 | `notes` | `bootstrap.php` | [`#L62`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L62) | یادداشت‌ها و صورتجلسات ادواری مربیان |
 | `plans` | `bootstrap.php` | [`#L63`](file:///c:/xampp/htdocs/CharShanbeJalase/bootstrap.php#L63) | طرح درس‌های جامع، سین برنامه و ماژول‌ها |
@@ -42,7 +42,7 @@
 | `csrfToken()` / `csrfCheck()` | `auth.php` | [`#L49-L65`](file:///c:/xampp/htdocs/CharShanbeJalase/auth.php#L49-L65) | تولید و اعتبارسنجی توکن‌های امنیتی CSRF |
 | `getAppData()` | `api.php` | [`#L114-L125`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L114-L125) | تجمیع تمام اطلاعات مورد نیاز صفحه اول داشبورد |
 | `getTrendData()` | `api.php` | [`#L175-L231`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L175-L231) | روند جلسات و محاسبه درصدهای وزنی تاخیر پلکانی |
-| `submitAttendance()` | `api.php` | [`#L349-L373`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L349-L373) | ذخیره اتمیک حضور و غیاب جلسه با دقایق تاخیر |
+| `submitAttendance()` | `api.php` | [`#L349-L373`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L349-L373) | ذخیره اتمیک حضور و غیاب جلسه با دقایق تاخیر و علت غیبت |
 | `getStudentDetails()` | `api.php` | [`#L593-L615`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L593-L615) | واکشی مشخصات، آمار تفکیکی و امتیاز سیستمی و رشد |
 | `savePlan()` | `api.php` | [`#L510-L560`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L510-L560) | درج/به‌روزرسانی طرح درس و همگام‌سازی ملزومات |
 | `submitMIObservation()` | `api.php` | [`#L890-L945`](file:///c:/xampp/htdocs/CharShanbeJalase/api.php#L890-L945) | ثبت رخداد هوش در جداول نسخه جدید و لگسی |

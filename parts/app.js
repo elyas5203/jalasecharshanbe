@@ -504,12 +504,21 @@
   // ردیف حضور و غیاب: چهار دکمه‌ی وضعیت لمسی به‌جای dropdown — مناسب موبایل
   const ATT_SEG = [['Present','حاضر'],['Late','تاخیر'],['Excused','موجه'],['Absent','غیبت']];
   function attRowHtml(s){
-    if(!TEMP[s.name]) TEMP[s.name]={s:'Present', m:0};
-    const st = TEMP[s.name].s, m = TEMP[s.name].m;
+    if(!TEMP[s.name]) TEMP[s.name]={s:'Present', m:0, r:''};
+    const t = TEMP[s.name];
+    const st = t.s, m = t.m, r = t.r || '';
     const seg = ATT_SEG.map(([v,label])=>`<button type="button" class="att-seg-btn ${v.toLowerCase()} ${st===v?'active':''}" data-v="${v}">${label}</button>`).join('');
-    const badge = (st==='Late'&&m)?`<span class="att-late-badge">${toPersianNum(m)} دقیقه</span>`:'';
+    const lateBadge = (st==='Late'&&m)?`<span class="att-late-badge" onclick="editAttLate('${attAttr(s.name)}', event)" title="ویرایش دقایق تاخیر">${toPersianNum(m)} دقیقه</span>`:'';
+    let reasonBadge = '';
+    if(st==='Absent' || st==='Excused'){
+      if(r){
+        reasonBadge = `<span class="att-reason-badge ${st.toLowerCase()}" onclick="editAttReason('${attAttr(s.name)}', event)" title="علت: ${attAttr(r)}">علت: ${attAttr(r)} ✏️</span>`;
+      } else {
+        reasonBadge = `<span class="att-reason-badge empty ${st.toLowerCase()}" onclick="editAttReason('${attAttr(s.name)}', event)" title="ثبت علت عدم حضور">+ ثبت علت</span>`;
+      }
+    }
     return `<div class="att-row" data-name="${attAttr(s.name)}">
-      <div class="att-row-head"><img src="${s.image}" class="avatar-sm" onerror="this.src='assets/default-avatar.svg'"><b>${s.name}</b>${badge}</div>
+      <div class="att-row-head"><img src="${s.image}" class="avatar-sm" onerror="this.src='assets/default-avatar.svg'"><b>${s.name}</b>${lateBadge}${reasonBadge}</div>
       <div class="att-seg">${seg}</div>
     </div>`;
   }
@@ -533,12 +542,37 @@
   function refreshAttRow(name){
     document.querySelectorAll('#att-list .att-row').forEach(row=>{
       if(row.getAttribute('data-name')!==name) return;
-      const t = TEMP[name] || {s:'Present', m:0};
+      const t = TEMP[name] || {s:'Present', m:0, r:''};
       row.querySelectorAll('.att-seg-btn').forEach(b=> b.classList.toggle('active', b.dataset.v===t.s));
       const head = row.querySelector('.att-row-head');
-      let badge = head.querySelector('.att-late-badge');
-      if(t.s==='Late' && t.m){ if(!badge){ badge=document.createElement('span'); badge.className='att-late-badge'; head.appendChild(badge); } badge.textContent = toPersianNum(t.m)+' دقیقه'; }
-      else if(badge){ badge.remove(); }
+      let lateBadge = head.querySelector('.att-late-badge');
+      let reasonBadge = head.querySelector('.att-reason-badge');
+
+      if(t.s==='Late' && t.m){
+        if(!lateBadge){
+          lateBadge=document.createElement('span');
+          lateBadge.className='att-late-badge';
+          lateBadge.onclick=(e)=>editAttLate(name, e);
+          head.appendChild(lateBadge);
+        }
+        lateBadge.title = 'ویرایش دقایق تاخیر';
+        lateBadge.textContent = toPersianNum(t.m)+' دقیقه';
+      } else if(lateBadge){
+        lateBadge.remove();
+      }
+
+      if(t.s==='Absent' || t.s==='Excused'){
+        if(!reasonBadge){
+          reasonBadge=document.createElement('span');
+          reasonBadge.onclick=(e)=>editAttReason(name, e);
+          head.appendChild(reasonBadge);
+        }
+        reasonBadge.className = 'att-reason-badge ' + (t.s==='Excused'?'excused':'') + (t.r?'':' empty');
+        reasonBadge.textContent = t.r ? ('علت: ' + t.r + ' ✏️') : '+ ثبت علت';
+        reasonBadge.title = t.r ? ('علت: ' + t.r) : 'ثبت علت عدم حضور';
+      } else if(reasonBadge){
+        reasonBadge.remove();
+      }
     });
   }
 
@@ -627,15 +661,50 @@
     if(v==='Late'){
       showPrompt("چند دقیقه تاخیر؟", "15", (m) => {
         const min = parseInt(toEnglishNum(String(m||'')).replace(/[^0-9]/g,''), 10);
-        if(!m || isNaN(min)) TEMP[name] = {s:'Present', m:0}; // انصراف از دقیقه = حاضر
-        else TEMP[name] = {s:'Late', m:min};
+        if(!m || isNaN(min)) TEMP[name] = {s:'Present', m:0, r:''}; // انصراف از دقیقه = حاضر
+        else TEMP[name] = {s:'Late', m:min, r:''};
+        refreshAttRow(name);
+      });
+    } else if(v==='Absent' || v==='Excused'){
+      const curReason = TEMP[name]?.r || '';
+      const promptTitle = v==='Absent' ? `علت غیبت ${name} (اختیاری):` : `علت موجه بودن ${name} (اختیاری):`;
+      showPrompt(promptTitle, curReason, (r) => {
+        const reason = (r !== null) ? String(r).trim() : curReason;
+        TEMP[name] = {s:v, m:0, r:reason};
         refreshAttRow(name);
       });
     } else {
-      TEMP[name] = {s:v, m:0};
+      TEMP[name] = {s:'Present', m:0, r:''};
       refreshAttRow(name);
     }
   }
+
+  window.editAttReason = function(name, event){
+    if(event) event.stopPropagation();
+    const cur = TEMP[name]?.r || '';
+    const st = TEMP[name]?.s || 'Absent';
+    const title = st==='Excused' ? `علت موجه بودن ${name} (اختیاری):` : `علت غیبت ${name} (اختیاری):`;
+    showPrompt(title, cur, (r) => {
+      if(r !== null){
+        if(!TEMP[name]) TEMP[name] = {s:st, m:0, r:''};
+        TEMP[name].r = String(r).trim();
+        refreshAttRow(name);
+      }
+    });
+  };
+
+  window.editAttLate = function(name, event){
+    if(event) event.stopPropagation();
+    const curM = TEMP[name]?.m || 15;
+    showPrompt("چند دقیقه تاخیر؟", String(curM), (m) => {
+      const min = parseInt(toEnglishNum(String(m||'')).replace(/[^0-9]/g,''), 10);
+      if(m && !isNaN(min)) {
+        if(!TEMP[name]) TEMP[name] = {s:'Late', m:min, r:''};
+        TEMP[name].m = min;
+        refreshAttRow(name);
+      }
+    });
+  };
 
   function manualScore(n){
     showPrompt(`امتیاز برای ${n}:`, "1", (p) => {
@@ -643,8 +712,30 @@
     });
   }
 
-  function markAllPresent(){ (DB.students||[]).forEach(s=>TEMP[s.name]={s:'Present',m:0}); (DB.students||[]).forEach(s=>refreshAttRow(s.name)); }
-  function submitData(btn){ if(!DB.students || DB.students.length===0) return showAlert("دانش‌آموزی ثبت نشده است."); const done=btnBusy(btn,'در حال ثبت...'); const recs=DB.students.map(s=>({name:s.name, status:TEMP[s.name].s, min:TEMP[s.name].m})); app.run.withSuccessHandler(r=>{ attendanceHistoryState.offset=0; attendanceHistoryState.done=false; done(); showToast(r.msg); fetchData(); }).withFailureHandler(e=>{ done(); showAlert(cleanServerError(e.message),'error'); }).submitAttendance({date:document.getElementById('att-date').value, records:recs}); }
+  function markAllPresent(){ (DB.students||[]).forEach(s=>TEMP[s.name]={s:'Present',m:0,r:''}); (DB.students||[]).forEach(s=>refreshAttRow(s.name)); }
+  function submitData(btn){
+    if(!DB.students || DB.students.length===0) return showAlert("دانش‌آموزی ثبت نشده است.");
+    const done=btnBusy(btn,'در حال ثبت...');
+    const recs=DB.students.map(s=>{
+      const t = TEMP[s.name] || {s:'Present', m:0, r:''};
+      return {
+        name: s.name,
+        status: t.s,
+        min: t.m,
+        reason: t.r || ''
+      };
+    });
+    app.run.withSuccessHandler(r=>{
+      attendanceHistoryState.offset=0;
+      attendanceHistoryState.done=false;
+      done();
+      showToast(r.msg);
+      fetchData();
+    }).withFailureHandler(e=>{
+      done();
+      showAlert(cleanServerError(e.message),'error');
+    }).submitAttendance({date:document.getElementById('att-date').value, records:recs});
+  }
   function saveNote(btn){ const d=document.getElementById('note-date').value; const t=document.getElementById('note-text').value; if(!t) return showToast('متن یادداشت خالی است','error'); const done=btnBusy(btn,'در حال ذخیره...'); app.run.withSuccessHandler(r=>{DB.notes=null; lazyOffsets.notes=0; lazyDone.notes=false; done(); showToast(r.msg); document.getElementById('note-text').value=""; fetchData();}).withFailureHandler(e=>{ done(); showAlert(e.message,'error'); }).saveNote(d,t); }
   function filterNotes(t){ document.querySelectorAll('.note-item').forEach(i=> i.style.display=i.innerText.includes(t)?'block':'none'); }
   function filterAtt(t){ document.querySelectorAll('#att-list .att-row').forEach(i=> i.style.display=i.innerText.includes(t)?'':'none'); }
@@ -871,10 +962,11 @@
   function saveFinalGrouping() { const d = document.getElementById('g-date').value; const model = document.getElementById('g-model').value; if(!model) return showAlert("لطفا عنوان مدل گروه‌بندی را وارد کنید"); if(tempGroups.length === 0) return showAlert("هیچ گروهی ایجاد نشده است!"); const details = JSON.stringify({ isMultiGroup: true, groups: tempGroups }); showLoading(); app.run.withSuccessHandler(r=>{ DB.moduleHistory=null; hideLoading(); showToast(r.msg); document.getElementById('manual-grouping-modal').style.display='none'; fetchData(); }).saveManualLog({date: d, type: 'grouping', title: model, details: details}); }
   function openFreeActivity() { document.getElementById('fa-date').value = toPersianNum(new Date().toLocaleDateString('fa-IR')); document.getElementById('free-activity-modal').style.display='flex'; }
   function saveFreeActivityLog() { const d = document.getElementById('fa-date').value; const t = document.getElementById('fa-title').value; const desc = document.getElementById('fa-desc').value; if(!t) return showAlert("عنوان الزامی است"); showLoading(); app.run.withSuccessHandler(r=>{ DB.moduleHistory=null; hideLoading(); showToast(r.msg); document.getElementById('free-activity-modal').style.display='none'; document.getElementById('fa-title').value = ""; document.getElementById('fa-desc').value = ""; fetchData(); }).saveManualLog({date: d, type: 'free_activity', title: t, details: desc}); }
-  function statusLabel(status, lateMinutes){
-    if(status === 'Absent') return 'غیبت';
-    if(status === 'Late') return 'تاخیر' + (lateMinutes ? ' (' + toPersianNum(lateMinutes) + 'د)' : '');
-    if(status === 'Excused') return 'موجه';
+  function statusLabel(status, lateMinutes, reason){
+    const rTxt = reason ? ' (علت: ' + attAttr(reason) + ')' : '';
+    if(status === 'Absent') return 'غیبت' + rTxt;
+    if(status === 'Late') return 'تاخیر' + (lateMinutes ? ' (' + toPersianNum(lateMinutes) + 'د)' : '') + rTxt;
+    if(status === 'Excused') return 'موجه' + rTxt;
     return 'حاضر';
   }
   function statusClass(status){
@@ -930,7 +1022,7 @@
       if(!r.success) { body.innerHTML = `<p style="opacity:.65;text-align:center;">${r.msg || 'جلسه پیدا نشد'}</p>`; return; }
       body.dataset.loaded = '1';
       let h = `<div class="attendance-detail-actions"><button class="btn btn-red" onclick="askDeleteAttendanceSession(${id}, event)">حذف این تاریخ</button></div>`;
-      h += (r.records || []).map(x=>`<div class="attendance-detail-row ${statusClass(x.status)}"><div><img src="${x.image}" class="avatar-sm" onerror="this.src='assets/default-avatar.svg'"><b>${x.name}</b></div><span>${statusLabel(x.status, x.lateMinutes)}</span></div>`).join('') || '<p style="opacity:.65;text-align:center;">رکوردی برای این جلسه ثبت نشده است.</p>';
+      h += (r.records || []).map(x=>`<div class="attendance-detail-row ${statusClass(x.status)}"><div><img src="${x.image}" class="avatar-sm" onerror="this.src='assets/default-avatar.svg'"><b>${x.name}</b></div><span>${statusLabel(x.status, x.lateMinutes, x.reason || x.absence_reason)}</span></div>`).join('') || '<p style="opacity:.65;text-align:center;">رکوردی برای این جلسه ثبت نشده است.</p>';
       body.innerHTML = h;
     }).withFailureHandler(e=>{ body.innerHTML = '<p style="opacity:.65;text-align:center;">خطا در دریافت ریز حضور.</p>'; showAlert(e.message, 'error'); }).getAttendanceSessionDetails(id);
   }
